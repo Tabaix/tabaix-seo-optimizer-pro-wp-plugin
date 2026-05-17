@@ -24,8 +24,8 @@ class TABAIX_SEO_Admin
     public function register_menus()
     {
         add_menu_page(
-            __('Ultimate AI Master', 'tabaix-seo-optimizer-pro'),
-            __('Ultimate AI', 'tabaix-seo-optimizer-pro'),
+            __('Tabaix SEO Pro', 'tabaix-seo-optimizer-pro'),
+            __('Tabaix SEO', 'tabaix-seo-optimizer-pro'),
             'edit_posts',
             'tabaix-seo-dashboard',
             [$this, 'page_dashboard'],
@@ -45,7 +45,7 @@ class TABAIX_SEO_Admin
 
     public function enqueue_assets($hook)
     {
-        if (strpos($hook, 'tabaix-seo-') === false && strpos($hook, 'ultimate-ai') === false)
+        if (strpos($hook, 'tabaix-seo-') === false)
             return;
 
         wp_enqueue_style('tabaix-seo-admin', TABAIX_SEO_PLUGIN_URL . 'assets/css/admin.css', [], TABAIX_SEO_VERSION);

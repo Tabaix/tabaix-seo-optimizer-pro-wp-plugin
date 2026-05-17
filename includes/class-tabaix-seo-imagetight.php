@@ -63,15 +63,16 @@ class TABAIX_SEO_ImageTight
 
     public function enqueue_scripts($hook)
     {
-        // Only load on our settings page or if it's the media page
-        if (strpos($hook, 'tabaix-seo-seo-suite') === false && $hook !== 'upload.php') return;
+        // Only load on our ImageTight page or the media library
+        if (strpos($hook, 'tabaix-seo-') === false && $hook !== 'upload.php') return;
 
-        wp_enqueue_script('tabaix-seo-imagetight-script', plugins_url('../assets/js/tabaix-seo-imagetight.js', __FILE__), ['jquery'], '1.0.0', true);
-        
+        wp_enqueue_script('tabaix-seo-imagetight-script', TABAIX_SEO_PLUGIN_URL . 'assets/js/tabaix-seo-imagetight.js', ['jquery'], TABAIX_SEO_VERSION, true);
+
         $api_key = get_option(self::OPT_API_KEY, '');
         wp_localize_script('tabaix-seo-imagetight-script', 'tabaix_seo_itc_data', [
-            'nonce'  => wp_create_nonce('tabaix_seo_admin_nonce'),
-            'hasKey' => !empty($api_key)
+            'nonce'   => wp_create_nonce('tabaix_seo_admin_nonce'),
+            'hasKey'  => !empty($api_key),
+            'ajaxUrl' => admin_url('admin-ajax.php'),
         ]);
     }
 
