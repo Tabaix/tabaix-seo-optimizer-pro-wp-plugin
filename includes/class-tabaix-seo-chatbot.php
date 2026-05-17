@@ -78,12 +78,12 @@ class TABAIX_SEO_Chatbot
                 </svg>
             </button>
 
-            <div id="uam-chatbot-panel" aria-hidden="true">
-                <div id="uam-chatbot-header">
-                    <div class="uam-chatbot-avatar">🤖</div>
-                    <div class="uam-chatbot-info">
+            <div id="tabaix-seo-chatbot-panel" aria-hidden="true">
+                <div id="tabaix-seo-chatbot-header">
+                    <div class="tabaix-seo-chatbot-avatar">🤖</div>
+                    <div class="tabaix-seo-chatbot-info">
                         <strong>AI Support Master</strong>
-                        <span class="uam-chatbot-status">Online & Ready</span>
+                        <span class="tabaix-seo-chatbot-status">Online & Ready</span>
                     </div>
                 </div>
 

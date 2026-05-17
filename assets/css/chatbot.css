@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 /* Utility */
-.uam-hidden {
+.tabaix-seo-hidden {
     display: none !important;
 }
 
@@ -23,30 +23,30 @@
 }
 
 /* ── Widget ─────────────────────────────────────────────────────── */
-#uam-chatbot-widget {
+#tabaix-seo-chatbot-widget {
     position: fixed;
     z-index: 99999;
     font-family: 'Inter', -apple-system, sans-serif;
 }
 
-#uam-chatbot-widget.uam-chatbot-bottom-right {
+#tabaix-seo-chatbot-widget.tabaix-seo-chatbot-bottom-right {
     right: 24px;
     bottom: 24px;
 }
 
-#uam-chatbot-widget.uam-chatbot-bottom-left {
+#tabaix-seo-chatbot-widget.tabaix-seo-chatbot-bottom-left {
     left: 24px;
     bottom: 24px;
 }
 
-#uam-chatbot-widget.uam-chatbot-bottom-center {
+#tabaix-seo-chatbot-widget.tabaix-seo-chatbot-bottom-center {
     left: 50%;
     bottom: 24px;
     transform: translateX(-50%);
 }
 
 /* ── Toggle Button ──────────────────────────────────────────────── */
-#uam-chatbot-toggle {
+#tabaix-seo-chatbot-toggle {
     width: 58px;
     height: 58px;
     border-radius: 50%;
@@ -76,17 +76,17 @@
     }
 }
 
-#uam-chatbot-toggle:hover {
+#tabaix-seo-chatbot-toggle:hover {
     transform: scale(1.08) translateY(-2px);
     box-shadow: 0 14px 40px rgba(99, 102, 241, .65);
 }
 
-#uam-chatbot-toggle svg {
+#tabaix-seo-chatbot-toggle svg {
     transition: all .25s ease;
 }
 
 /* ── Notification dot ───────────────────────────────────────────── */
-#uam-chatbot-toggle::after {
+#tabaix-seo-chatbot-toggle::after {
     content: '';
     position: absolute;
     top: 2px;
@@ -112,7 +112,7 @@
 }
 
 /* ── Panel ──────────────────────────────────────────────────────── */
-#uam-chatbot-panel {
+#tabaix-seo-chatbot-panel {
     position: absolute;
     bottom: 72px;
     right: 0;
@@ -132,14 +132,14 @@
     max-height: 540px;
 }
 
-#uam-chatbot-panel.uam-panel-open {
+#tabaix-seo-chatbot-panel.tabaix-seo-panel-open {
     opacity: 1;
     transform: scale(1) translateY(0);
     pointer-events: all;
 }
 
 /* ── Panel Header ───────────────────────────────────────────────── */
-#uam-chatbot-header {
+#tabaix-seo-chatbot-header {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -148,7 +148,7 @@
     flex-shrink: 0;
 }
 
-.uam-chatbot-avatar {
+.tabaix-seo-chatbot-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -159,14 +159,14 @@
     flex-shrink: 0;
 }
 
-.uam-chatbot-info strong {
+.tabaix-seo-chatbot-info strong {
     display: block;
     font-size: 14px;
     font-weight: 700;
     color: #fff;
 }
 
-.uam-chatbot-status {
+.tabaix-seo-chatbot-status {
     font-size: 11px;
     color: rgba(255, 255, 255, .8);
     display: flex;
@@ -174,7 +174,7 @@
     gap: 5px;
 }
 
-.uam-chatbot-status::before {
+.tabaix-seo-chatbot-status::before {
     content: '';
     width: 6px;
     height: 6px;
@@ -185,7 +185,7 @@
 }
 
 /* ── Messages ───────────────────────────────────────────────────── */
-#uam-chatbot-messages {
+#tabaix-seo-chatbot-messages {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
@@ -198,11 +198,11 @@
     scrollbar-color: var(--uc-border) transparent;
 }
 
-#uam-chatbot-messages::-webkit-scrollbar {
+#tabaix-seo-chatbot-messages::-webkit-scrollbar {
     width: 4px;
 }
 
-#uam-chatbot-messages::-webkit-scrollbar-thumb {
+#tabaix-seo-chatbot-messages::-webkit-scrollbar-thumb {
     background: var(--uc-border);
     border-radius: 2px;
 }
@@ -247,7 +247,7 @@
 }
 
 /* ── Typing Indicator ───────────────────────────────────────────── */
-#uam-chatbot-typing {
+#tabaix-seo-chatbot-typing {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -256,7 +256,7 @@
     margin: -4px 16px 4px;
 }
 
-#uam-chatbot-typing span {
+#tabaix-seo-chatbot-typing span {
     width: 7px;
     height: 7px;
     background: var(--uc-accent);
@@ -265,11 +265,11 @@
     animation: uc-bounce .9s ease-in-out infinite;
 }
 
-#uam-chatbot-typing span:nth-child(2) {
+#tabaix-seo-chatbot-typing span:nth-child(2) {
     animation-delay: .15s;
 }
 
-#uam-chatbot-typing span:nth-child(3) {
+#tabaix-seo-chatbot-typing span:nth-child(3) {
     animation-delay: .3s;
 }
 
@@ -288,7 +288,7 @@
 }
 
 /* ── Input Area ─────────────────────────────────────────────────── */
-#uam-chatbot-input-area {
+#tabaix-seo-chatbot-input-area {
     display: flex;
     align-items: flex-end;
     gap: 8px;
@@ -298,7 +298,7 @@
     flex-shrink: 0;
 }
 
-#uam-chatbot-input {
+#tabaix-seo-chatbot-input {
     flex: 1;
     padding: 10px 14px;
     background: rgba(255, 255, 255, .05);
@@ -315,16 +315,16 @@
     transition: border-color .2s;
 }
 
-#uam-chatbot-input:focus {
+#tabaix-seo-chatbot-input:focus {
     border-color: var(--uc-accent);
     box-shadow: 0 0 0 2px rgba(99, 102, 241, .2);
 }
 
-#uam-chatbot-input::placeholder {
+#tabaix-seo-chatbot-input::placeholder {
     color: rgba(148, 163, 184, .5);
 }
 
-#uam-chatbot-send {
+#tabaix-seo-chatbot-send {
     width: 40px;
     height: 40px;
     border-radius: 12px;
@@ -340,27 +340,27 @@
     box-shadow: 0 4px 12px rgba(99, 102, 241, .4);
 }
 
-#uam-chatbot-send:hover {
+#tabaix-seo-chatbot-send:hover {
     transform: scale(1.08);
     box-shadow: 0 6px 18px rgba(99, 102, 241, .6);
 }
 
-#uam-chatbot-send:active {
+#tabaix-seo-chatbot-send:active {
     transform: scale(.96);
 }
 
 /* ── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
-    #uam-chatbot-panel {
+    #tabaix-seo-chatbot-panel {
         width: calc(100vw - 48px);
     }
 
-    #uam-chatbot-widget.uam-chatbot-bottom-right {
+    #tabaix-seo-chatbot-widget.tabaix-seo-chatbot-bottom-right {
         right: 16px;
         bottom: 16px;
     }
 
-    #uam-chatbot-widget.uam-chatbot-bottom-left {
+    #tabaix-seo-chatbot-widget.tabaix-seo-chatbot-bottom-left {
         left: 16px;
         bottom: 16px;
     }

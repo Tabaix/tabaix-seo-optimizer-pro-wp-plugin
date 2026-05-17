@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_Head_Deduplicator
+ * TABAIX_SEO_Head_Deduplicator
  *
  * Solves the "duplicate meta tags" problem permanently, for ANY combination
  * of SEO plugins (Yoast, RankMath, SEOPress, AIOSEO, our plugin, or unknown).

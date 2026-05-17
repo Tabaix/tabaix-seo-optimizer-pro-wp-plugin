@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_ImageTight — Image Compression Module for Tabaix All-in-One SEO & Optimizer
+ * TABAIX_SEO_ImageTight — Image Compression Module for Tabaix All-in-One SEO & Optimizer
  *
  * Integrates the full ImageTight plugin functionality directly into the
  * Tabaix All-in-One SEO & Optimizer admin interface as a dedicated module tab.
@@ -47,7 +47,7 @@ class TABAIX_SEO_ImageTight
 
     private function __construct()
     {
-        // Register AJAX handlers (prefixed tsp_ to avoid conflicts with standalone)
+        // Register AJAX handlers (prefixed tabaix_seo_ to avoid conflicts with standalone)
         add_action('wp_ajax_tabaix_seo_itc_scan',         [$this, 'ajax_scan']);
         add_action('wp_ajax_tabaix_seo_itc_compress',      [$this, 'ajax_compress']);
         add_action('wp_ajax_tabaix_seo_itc_restore',       [$this, 'ajax_restore']);
@@ -64,12 +64,12 @@ class TABAIX_SEO_ImageTight
     public function enqueue_scripts($hook)
     {
         // Only load on our settings page or if it's the media page
-        if (strpos($hook, 'uam-seo-suite') === false && $hook !== 'upload.php') return;
+        if (strpos($hook, 'tabaix-seo-seo-suite') === false && $hook !== 'upload.php') return;
 
-        wp_enqueue_script('tsp-imagetight-script', plugins_url('../assets/js/tsp-imagetight.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_script('tabaix-seo-imagetight-script', plugins_url('../assets/js/tabaix-seo-imagetight.js', __FILE__), ['jquery'], '1.0.0', true);
         
         $api_key = get_option(self::OPT_API_KEY, '');
-        wp_localize_script('tsp-imagetight-script', 'tsp_itc_data', [
+        wp_localize_script('tabaix-seo-imagetight-script', 'tabaix_seo_itc_data', [
             'nonce'  => wp_create_nonce('tabaix_seo_admin_nonce'),
             'hasKey' => !empty($api_key)
         ]);
@@ -100,22 +100,22 @@ class TABAIX_SEO_ImageTight
         $pct        = $total > 0 ? round(($optimized / $total) * 100) : 0;
         ?>
 
-        <div class="tsp-wrap wrap">
+        <div class="tabaix-seo-wrap wrap">
             <div class="tss-header">
                 <span class="dashicons dashicons-performance" style="font-size:28px;width:28px;height:28px;"></span>
                 <div>
                     <h1>🗜️ ImageTight — Image Optimizer</h1>
                     <small style="color:#94A3B8;">Compress & convert your WordPress media library via Vercel Edge API</small>
                 </div>
-                <span id="tsp-quota-badge" style="margin-left:auto;background:#1E293B;color:#22C55E;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13px;display:none;">
-                    📊 <span id="tsp-quota-val">—</span> credits left
+                <span id="tabaix-seo-quota-badge" style="margin-left:auto;background:#1E293B;color:#22C55E;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13px;display:none;">
+                    📊 <span id="tabaix-seo-quota-val">—</span> credits left
                 </span>
             </div>
 
             <?php if (!$has_key): ?>
             <div class="tss-notice tss-notice-warn">
                 ⚠️ <strong>No ImageTight API key set.</strong>
-                Get your free API key at <a href="https://imagetight.tabaix.com" target="_blank"><strong>imagetight.tabaix.com</strong></a>
+                Get your free API key at <a href="https://imagetight.com/dashboard" target="_blank"><strong>imagetight.com</strong></a>
                 then enter it below in Settings.
             </div>
             <?php endif; ?>
@@ -140,36 +140,36 @@ class TABAIX_SEO_ImageTight
 
             <!-- Tabs -->
             <div class="tss-tabs">
-                <a class="tss-tab active" href="#" data-tab="tsp-tab-scan">📂 Media Scanner</a>
-                <a class="tss-tab" href="#" data-tab="tsp-tab-optimized">✅ Optimized Images</a>
-                <a class="tss-tab" href="#" data-tab="tsp-tab-settings">⚙️ Settings</a>
+                <a class="tss-tab active" href="#" data-tab="tabaix-seo-tab-scan">📂 Media Scanner</a>
+                <a class="tss-tab" href="#" data-tab="tabaix-seo-tab-optimized">✅ Optimized Images</a>
+                <a class="tss-tab" href="#" data-tab="tabaix-seo-tab-settings">⚙️ Settings</a>
             </div>
 
             <!-- Tab: Scanner -->
-            <div id="tsp-tab-scan" class="tsp-tab-pane tss-section" style="display:block;">
+            <div id="tabaix-seo-tab-scan" class="tabaix-seo-tab-pane tss-section" style="display:block;">
                 <h2>📂 Media Library Scanner</h2>
                 <p style="color:#64748B;font-size:13px;margin-bottom:16px;">
                     Scan your media library for heavy images (over <?php echo intval($threshold); ?>KB) and compress them 1-click to WebP/AVIF via the ImageTight API.
                 </p>
                 <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
-                    <button id="tsp-scan-btn" class="tss-btn" <?php echo !$has_key ? 'disabled' : ''; ?>>
+                    <button id="tabaix-seo-scan-btn" class="tss-btn" <?php echo !$has_key ? 'disabled' : ''; ?>>
                         🔍 Scan for Heavy Images
                     </button>
-                    <button id="tsp-bulk-btn" class="tss-btn" style="display:none;background:#6366F1;" <?php echo !$has_key ? 'disabled' : ''; ?>>
+                    <button id="tabaix-seo-bulk-btn" class="tss-btn" style="display:none;background:#6366F1;" <?php echo !$has_key ? 'disabled' : ''; ?>>
                         🚀 Bulk Optimize All Pending
                     </button>
-                    <span id="tsp-scan-status" style="font-size:13px;color:#64748B;"></span>
+                    <span id="tabaix-seo-scan-status" style="font-size:13px;color:#64748B;"></span>
                 </div>
-                <div id="tsp-progress-wrap" style="display:none;background:#E2E8F0;border-radius:8px;overflow:hidden;height:10px;margin-bottom:16px;">
-                    <div id="tsp-progress-bar" style="height:100%;background:#22C55E;width:0%;transition:width .3s;"></div>
+                <div id="tabaix-seo-progress-wrap" style="display:none;background:#E2E8F0;border-radius:8px;overflow:hidden;height:10px;margin-bottom:16px;">
+                    <div id="tabaix-seo-progress-bar" style="height:100%;background:#22C55E;width:0%;transition:width .3s;"></div>
                 </div>
-                <div id="tsp-scan-results"></div>
+                <div id="tabaix-seo-scan-results"></div>
             </div>
 
             <!-- Tab: Optimized -->
-            <div id="tsp-tab-optimized" class="tsp-tab-pane tss-section" style="display:none;">
+            <div id="tabaix-seo-tab-optimized" class="tabaix-seo-tab-pane tss-section" style="display:none;">
                 <h2>✅ Optimized Images — Restore Backup</h2>
-                <div id="tsp-optimized-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+                <div id="tabaix-seo-optimized-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
                 <?php
                 $opt_query = new WP_Query([
                     'post_type'       => 'attachment',
@@ -188,7 +188,7 @@ class TABAIX_SEO_ImageTight
                         <img src="<?php echo esc_url($thumb); ?>" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;">
                         <div style="font-size:11px;color:#065F46;font-weight:700;">💾 <?php echo esc_html(size_format($saved_b)); ?> saved</div>
                         <?php if ($has_backup): ?>
-                        <button class="tss-btn tss-btn-sm tsp-restore-btn" data-id="<?php echo esc_attr($att->ID); ?>"
+                        <button class="tss-btn tss-btn-sm tabaix-seo-restore-btn" data-id="<?php echo esc_attr($att->ID); ?>"
                             style="background:#EF4444;margin-top:8px;font-size:11px;padding:4px 10px;">
                             ↩ Restore
                         </button>
@@ -202,30 +202,30 @@ class TABAIX_SEO_ImageTight
             </div>
 
             <!-- Tab: Settings -->
-            <div id="tsp-tab-settings" class="tsp-tab-pane tss-section" style="display:none;">
+            <div id="tabaix-seo-tab-settings" class="tabaix-seo-tab-pane tss-section" style="display:none;">
                 <h2>⚙️ ImageTight Settings</h2>
                 <div class="tss-notice">
                     💡 Get your free API key at
-                    <a href="https://imagetight.tabaix.com/pricing" target="_blank"><strong>imagetight.tabaix.com/pricing</strong></a>
+                    <a href="https://imagetight.com/pricing" target="_blank"><strong>imagetight.com/pricing</strong></a>
                     — free tier includes 100 compressions/month.
                 </div>
                 <div class="tss-row">
                     <label class="tss-label">ImageTight API Key</label>
-                    <input type="password" id="tsp-itc-apikey" class="tss-input" style="max-width:500px;"
+                    <input type="password" id="tabaix-seo-itc-apikey" class="tss-input" style="max-width:500px;"
                         value="<?php echo esc_attr($api_key); ?>" placeholder="it_live_..." />
-                    <button class="tss-btn tss-btn-sm" id="tsp-itc-test-key" style="margin-top:8px;">🔑 Test & Save Key</button>
-                    <span id="tsp-itc-key-status" style="font-size:12px;margin-left:10px;"></span>
+                    <button class="tss-btn tss-btn-sm" id="tabaix-seo-itc-test-key" style="margin-top:8px;">🔑 Test & Save Key</button>
+                    <span id="tabaix-seo-itc-key-status" style="font-size:12px;margin-left:10px;"></span>
                 </div>
                 <div class="tss-row" style="margin-top:20px;background:rgba(59,130,246,0.05);padding:16px;border-radius:12px;border:1px solid rgba(59,130,246,0.2);">
                     <label class="tss-label" style="color:#2563EB;">✨ Google Gemini AI Key (Free AI Alt Text)</label>
                     <p style="font-size:12px;color:#64748B;margin-bottom:10px;">Enter your free Gemini API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>. This will securely trigger our Vercel Edge API to generate high-quality SEO Alt Text for your images during compression!</p>
-                    <input type="password" id="tsp-itc-gemini-key" class="tss-input" style="max-width:500px;"
+                    <input type="password" id="tabaix-seo-itc-gemini-key" class="tss-input" style="max-width:500px;"
                         value="<?php echo esc_attr($gemini_key); ?>" placeholder="AIzaSy..." />
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;">
                     <div class="tss-row">
                         <label class="tss-label">Output Format</label>
-                        <select id="tsp-itc-format" class="tss-input">
+                        <select id="tabaix-seo-itc-format" class="tss-input">
                             <option value="webp" <?php selected($format,'webp'); ?>>WebP (Recommended)</option>
                             <option value="avif" <?php selected($format,'avif'); ?>>AVIF (Smallest)</option>
                             <option value="jpeg" <?php selected($format,'jpeg'); ?>>JPEG (Compatible)</option>
@@ -233,7 +233,7 @@ class TABAIX_SEO_ImageTight
                     </div>
                     <div class="tss-row">
                         <label class="tss-label">AI Alt Text Language</label>
-                        <select id="tsp-itc-language" class="tss-input">
+                        <select id="tabaix-seo-itc-language" class="tss-input">
                             <?php
                             $languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese', 'Korean', 'Arabic', 'Urdu', 'Hindi', 'Bengali'];
                             foreach ($languages as $lang) {
@@ -245,25 +245,25 @@ class TABAIX_SEO_ImageTight
                     </div>
                     <div class="tss-row">
                         <label class="tss-label">Quality (1–100)</label>
-                        <input type="number" id="tsp-itc-quality" class="tss-input" value="<?php echo esc_attr($quality); ?>" min="1" max="100" />
+                        <input type="number" id="tabaix-seo-itc-quality" class="tss-input" value="<?php echo esc_attr($quality); ?>" min="1" max="100" />
                     </div>
                     <div class="tss-row">
                         <label class="tss-label">Heavy Image Threshold (KB)</label>
-                        <input type="number" id="tsp-itc-threshold" class="tss-input" value="<?php echo esc_attr($threshold); ?>" min="50" />
+                        <input type="number" id="tabaix-seo-itc-threshold" class="tss-input" value="<?php echo esc_attr($threshold); ?>" min="50" />
                         <small style="color:#94A3B8;">Images larger than this will be flagged for compression.</small>
                     </div>
                     <div class="tss-row">
                         <label class="tss-label">Options</label>
                         <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-                            <input type="checkbox" id="tsp-itc-auto" <?php checked($auto,1); ?>> Auto-compress new uploads
+                            <input type="checkbox" id="tabaix-seo-itc-auto" <?php checked($auto,1); ?>> Auto-compress new uploads
                         </label>
                         <label style="display:flex;gap:8px;align-items:center;">
-                            <input type="checkbox" id="tsp-itc-backup" <?php checked($backup,1); ?>> Keep backup of originals
+                            <input type="checkbox" id="tabaix-seo-itc-backup" <?php checked($backup,1); ?>> Keep backup of originals
                         </label>
                     </div>
                 </div>
-                <button class="tss-btn" id="tsp-itc-save-settings" style="margin-top:20px;">💾 Save Settings</button>
-                <span id="tsp-itc-save-status" style="font-size:12px;margin-left:12px;color:#065F46;"></span>
+                <button class="tss-btn" id="tabaix-seo-itc-save-settings" style="margin-top:20px;">💾 Save Settings</button>
+                <span id="tabaix-seo-itc-save-status" style="font-size:12px;margin-left:12px;color:#065F46;"></span>
             </div>
         </div>
         <?php

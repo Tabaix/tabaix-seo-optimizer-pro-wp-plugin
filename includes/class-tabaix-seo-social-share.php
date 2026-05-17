@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_Social_Share — Social Sharing Buttons for Tabaix All-in-One SEO & Optimizer
+ * TABAIX_SEO_Social_Share — Social Sharing Buttons for Tabaix All-in-One SEO & Optimizer
  *
  * Adds beautiful social sharing buttons (Facebook, X/Twitter, WhatsApp,
  * LinkedIn, Pinterest, Telegram) to posts/pages.
@@ -56,8 +56,8 @@ class TABAIX_SEO_Social_Share
         if (!is_singular()) return;
         if (!get_option('tabaix_seo_ss_enabled', 1)) return;
 
-        wp_enqueue_style('tabaix-seo-social-share', plugins_url('../assets/css/tsp-social-share.css', __FILE__), [], '1.1.0');
-        wp_enqueue_script('tabaix-seo-social-share', plugins_url('../assets/js/tsp-social-share.js', __FILE__), [], '1.1.0', true);
+        wp_enqueue_style('tabaix-seo-social-share', plugins_url('../assets/css/tabaix-seo-social-share.css', __FILE__), [], '1.1.0');
+        wp_enqueue_script('tabaix-seo-social-share', plugins_url('../assets/js/tabaix-seo-social-share.js', __FILE__), [], '1.1.0', true);
     }
 
     /* ───────────────────────────────────────────────
@@ -129,7 +129,7 @@ class TABAIX_SEO_Social_Share
                 'label' => 'Copy Link',
                 'icon'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>',
                 'color' => '#10b981',
-                'onclick'=> 'navigator.clipboard.writeText(this.href);var t=this.querySelector(".tsp-ss-text");var o=t.innerText;t.innerText="Copied!";setTimeout(()=>{t.innerText=o;},2000);return false;',
+                'onclick'=> 'navigator.clipboard.writeText(this.href);var t=this.querySelector(".tabaix-seo-ss-text");var o=t.innerText;t.innerText="Copied!";setTimeout(()=>{t.innerText=o;},2000);return false;',
             ],
         ];
     }
@@ -146,11 +146,11 @@ class TABAIX_SEO_Social_Share
 
         ob_start();
         ?>
-        <div class="tsp-ss-wrap tsp-ss-<?php echo esc_attr($context); ?>">
+        <div class="tabaix-seo-ss-wrap tabaix-seo-ss-<?php echo esc_attr($context); ?>">
             <?php if ($label && $context === 'inline') : ?>
-                <p class="tsp-ss-label"><?php echo esc_html($label); ?></p>
+                <p class="tabaix-seo-ss-label"><?php echo esc_html($label); ?></p>
             <?php endif; ?>
-            <div class="tsp-ss-buttons">
+            <div class="tabaix-seo-ss-buttons">
                 <?php foreach ($networks as $network) :
                     if (!isset($all_links[$network])) continue;
                     $link = $all_links[$network];
@@ -158,15 +158,15 @@ class TABAIX_SEO_Social_Share
                 ?>
                 <a
                     href="<?php echo esc_url($link['url']); ?>"
-                    class="tsp-ss-btn tsp-ss-<?php echo esc_attr($network); ?>"
+                    class="tabaix-seo-ss-btn tabaix-seo-ss-<?php echo esc_attr($network); ?>"
                     target="_blank"
                     rel="noopener noreferrer nofollow"
                     aria-label="<?php echo esc_attr('Share on ' . $link['label']); ?>"
                     style="--btn-color: <?php echo esc_attr($link['color']); ?>;"
                     <?php if ($onclick) echo 'onclick="' . esc_attr($onclick) . '"'; ?>
                 >
-                    <span class="tsp-ss-icon"><?php echo $link['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-                    <span class="tsp-ss-text"><?php echo esc_html($link['label']); ?></span>
+                    <span class="tabaix-seo-ss-icon"><?php echo $link['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                    <span class="tabaix-seo-ss-text"><?php echo esc_html($link['label']); ?></span>
                 </a>
                 <?php endforeach; ?>
             </div>

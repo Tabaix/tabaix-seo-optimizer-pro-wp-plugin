@@ -2,10 +2,10 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_Pros_Cons — Pros & Cons Schema Block for Tabaix All-in-One SEO & Optimizer
+ * TABAIX_SEO_Pros_Cons — Pros & Cons Schema Block for Tabaix All-in-One SEO & Optimizer
  *
  * Features:
- *  - [tsp_pros_cons] shortcode (no API needed)
+ *  - [tabaix_seo_pros_cons] shortcode (no API needed)
  *  - AI generation via Gemini/OpenAI (with API key)
  *  - Outputs Review schema.org markup → Google star ratings
  *  - AJAX endpoint for admin UI generation
@@ -38,11 +38,11 @@ class TABAIX_SEO_Pros_Cons
 
     public function enqueue_styles()
     {
-        wp_enqueue_style('tsp-pros-cons-style', plugins_url('../assets/css/tsp-pros-cons.css', __FILE__), [], '1.0.0');
+        wp_enqueue_style('tabaix-seo-pros-cons-style', plugins_url('../assets/css/tabaix-seo-pros-cons.css', __FILE__), [], '1.0.0');
     }
 
     /**
-     * Shortcode: [tsp_pros_cons product="Product Name" rating="4.5"
+     * Shortcode: [tabaix_seo_pros_cons product="Product Name" rating="4.5"
      *             pros="Pro 1|Pro 2|Pro 3" cons="Con 1|Con 2"]
      */
     public function render_shortcode($atts)
@@ -84,23 +84,23 @@ class TABAIX_SEO_Pros_Cons
         // wp_json_encode with JSON_HEX_TAG prevents </script> injection in JSON-LD
         $schema_json = wp_json_encode($schema, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE);
 
-        return '<div class="tsp-pc-wrap">
-            <div class="tsp-pc-header">
+        return '<div class="tabaix-seo-pc-wrap">
+            <div class="tabaix-seo-pc-header">
                 ⚖️ ' . esc_html($atts['product']) . ' — Pros &amp; Cons
                 <small>Honest Review</small>
             </div>
-            <div class="tsp-pc-body">
-                <div class="tsp-pc-col tsp-pros">
-                    <p class="tsp-pc-col-heading">✅ Pros</p>
-                    <ul class="tsp-pc-list">' . $pros_html . '</ul>
+            <div class="tabaix-seo-pc-body">
+                <div class="tabaix-seo-pc-col tabaix-seo-pros">
+                    <p class="tabaix-seo-pc-col-heading">✅ Pros</p>
+                    <ul class="tabaix-seo-pc-list">' . $pros_html . '</ul>
                 </div>
-                <div class="tsp-pc-col tsp-cons">
-                    <p class="tsp-pc-col-heading">❌ Cons</p>
-                    <ul class="tsp-pc-list">' . $cons_html . '</ul>
+                <div class="tabaix-seo-pc-col tabaix-seo-cons">
+                    <p class="tabaix-seo-pc-col-heading">❌ Cons</p>
+                    <ul class="tabaix-seo-pc-list">' . $cons_html . '</ul>
                 </div>
             </div>
-            <div class="tsp-pc-rating">
-                <span class="tsp-pc-stars">' . esc_html($stars) . '</span>
+            <div class="tabaix-seo-pc-rating">
+                <span class="tabaix-seo-pc-stars">' . esc_html($stars) . '</span>
                 <strong>' . esc_html(number_format($rating, 1)) . '/5</strong>
                 <span>— ' . esc_html($atts['product']) . '</span>
             </div>

@@ -34,16 +34,16 @@
 
     // ── UI Helpers ────────────────────────────────────────────────────────
     setLoading($btn, loading) {
-      if (loading) { $btn.addClass('uam-loading').prop('disabled', true); }
-      else { $btn.removeClass('uam-loading').prop('disabled', false); }
+      if (loading) { $btn.addClass('tabaix-seo-loading').prop('disabled', true); }
+      else { $btn.removeClass('tabaix-seo-loading').prop('disabled', false); }
     },
 
     showLoader($el) {
-      $el.html('<div class="uam-loader"><div class="uam-spinner"></div> Generating…</div>');
+      $el.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Generating…</div>');
     },
 
     showError(msg, $el) {
-      const html = `<div class="uam-notice uam-notice-error">⚠️ ${this.escHtml(msg)}</div>`;
+      const html = `<div class="tabaix-seo-notice tabaix-seo-notice-error">⚠️ ${this.escHtml(msg)}</div>`;
       if ($el) $el.html(html); else console.error('[UAM]', msg);
     },
 
@@ -78,18 +78,18 @@
       const pct = Math.round((score / max) * 100);
       const color = pct >= 75 ? '#10b981' : pct >= 45 ? '#f59e0b' : '#ef4444';
       return `
-        <div class="uam-score-bar-wrap">
-          <span style="font-size:12px;font-weight:600;min-width:130px;color:var(--uam-text2)">${this.escHtml(label)}</span>
-          <div class="uam-score-bar-bg">
-            <div class="uam-score-bar" style="width:${pct}%;background:${color}"></div>
+        <div class="tabaix-seo-score-bar-wrap">
+          <span style="font-size:12px;font-weight:600;min-width:130px;color:var(--tabaix-seo-text2)">${this.escHtml(label)}</span>
+          <div class="tabaix-seo-score-bar-bg">
+            <div class="tabaix-seo-score-bar" style="width:${pct}%;background:${color}"></div>
           </div>
-          <span class="uam-score-label">${score}${max === 100 ? '%' : ''}</span>
+          <span class="tabaix-seo-score-label">${score}${max === 100 ? '%' : ''}</span>
         </div>`;
     },
 
     // ── Keyword chips ─────────────────────────────────────────────────────
-    renderChips(items, color = 'var(--uam-accent)') {
-      if (!Array.isArray(items) || !items.length) return '<em style="color:var(--uam-text3)">None</em>';
+    renderChips(items, color = 'var(--tabaix-seo-accent)') {
+      if (!Array.isArray(items) || !items.length) return '<em style="color:var(--tabaix-seo-text3)">None</em>';
       return items.map(i =>
         `<span style="display:inline-block;background:rgba(99,102,241,.12);color:${color};border:1px solid rgba(99,102,241,.2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;margin:3px 2px">${this.escHtml(i)}</span>`
       ).join('');
@@ -97,8 +97,8 @@
 
     // ── List renderer ─────────────────────────────────────────────────────
     renderList(items, icon = '→') {
-      if (!Array.isArray(items) || !items.length) return '<em style="color:var(--uam-text3)">None</em>';
-      return `<ul class="uam-list-items">${items.map(i => `<li>${icon} ${this.escHtml(i)}</li>`).join('')}</ul>`;
+      if (!Array.isArray(items) || !items.length) return '<em style="color:var(--tabaix-seo-text3)">None</em>';
+      return `<ul class="tabaix-seo-list-items">${items.map(i => `<li>${icon} ${this.escHtml(i)}</li>`).join('')}</ul>`;
     },
     showToast(msg, type = 'success') {
       const isError = type === 'error';
@@ -113,10 +113,10 @@
   // ════════════════════════════════════════════════════════
   // 1. TABS
   // ════════════════════════════════════════════════════════
-  $(document).on('click', '.uam-tab', function () {
-    const $tabs = $(this).closest('.uam-tabs-nav');
-    const $panes = $tabs.next('.uam-tab-pane').parent().find('.uam-tab-pane');
-    $tabs.find('.uam-tab').removeClass('active');
+  $(document).on('click', '.tabaix-seo-tab', function () {
+    const $tabs = $(this).closest('.tabaix-seo-tabs-nav');
+    const $panes = $tabs.next('.tabaix-seo-tab-pane').parent().find('.tabaix-seo-tab-pane');
+    $tabs.find('.tabaix-seo-tab').removeClass('active');
     $(this).addClass('active');
     $panes.removeClass('active');
     $('#tab-' + $(this).data('tab')).addClass('active');
@@ -125,14 +125,14 @@
   // ════════════════════════════════════════════════════════
   // 2. PROVIDER QUICK SWITCH
   // ════════════════════════════════════════════════════════
-  $(document).on('click', '.uam-provider-pill', function () {
+  $(document).on('click', '.tabaix-seo-provider-pill', function () {
     const provider = $(this).data('provider');
     const $btn = $(this);
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_quick_switch_provider', { provider }, function (data) {
+    UAM.ajax('tabaix_seo_quick_switch_provider', { provider }, function (data) {
       UAM.setLoading($btn, false);
       UAM.provider = provider;
-      $('.uam-provider-pill').removeClass('active');
+      $('.tabaix-seo-provider-pill').removeClass('active');
       $(`[data-provider="${provider}"]`).addClass('active');
       const toast = $(`<div style="position:fixed;top:28px;right:28px;z-index:99999;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:12px 20px;border-radius:10px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(99,102,241,.45)">
         ✓ Switched to ${data.provider === 'openai' ? 'OpenAI GPT' : 'Google Gemini'}
@@ -144,12 +144,12 @@
   // Settings page provider toggle
   $(document).on('change', 'input[name="provider"]', function () {
     const val = $(this).val();
-    $('.uam-provider-opt').removeClass('active');
-    $(this).closest('.uam-provider-opt').addClass('active');
+    $('.tabaix-seo-provider-opt').removeClass('active');
+    $(this).closest('.tabaix-seo-provider-opt').addClass('active');
   });
 
   // Toggle password visibility
-  $(document).on('click', '.uam-toggle-password', function () {
+  $(document).on('click', '.tabaix-seo-toggle-password', function () {
     const target = $(this).data('target');
     const $input = $(`[name="${target}"]`);
     $input.attr('type', $input.attr('type') === 'password' ? 'text' : 'password');
@@ -181,12 +181,12 @@
   $(document).on('click', '#btn-outline', function () {
     const $btn = $(this), $out = $('#content-result');
     const topic = $('#bp-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_outline', { topic, keywords: $('#bp-keywords').val() }, function (d) {
+    UAM.ajax('tabaix_seo_generate_outline', { topic, keywords: $('#bp-keywords').val() }, function (d) {
       UAM.setLoading($btn, false);
-      $out.html(`<div class="uam-result-area">${UAM.renderMarkdown(d.result)}</div>`);
+      $out.html(`<div class="tabaix-seo-result-area">${UAM.renderMarkdown(d.result)}</div>`);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
 
@@ -194,12 +194,12 @@
   $(document).on('click', '#btn-intro', function () {
     const $btn = $(this), $out = $('#content-result');
     const topic = $('#bp-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_intro', { topic, keywords: $('#bp-keywords').val() }, function (d) {
+    UAM.ajax('tabaix_seo_generate_intro', { topic, keywords: $('#bp-keywords').val() }, function (d) {
       UAM.setLoading($btn, false);
-      $out.html(`<p style="line-height:1.8;color:var(--uam-text)">${UAM.escHtml(d.result)}</p>`);
+      $out.html(`<p style="line-height:1.8;color:var(--tabaix-seo-text)">${UAM.escHtml(d.result)}</p>`);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
 
@@ -207,12 +207,12 @@
   $(document).on('click', '#btn-conclusion', function () {
     const $btn = $(this), $out = $('#content-result');
     const topic = $('#bp-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_conclusion', { topic, main_points: '' }, function (d) {
+    UAM.ajax('tabaix_seo_generate_conclusion', { topic, main_points: '' }, function (d) {
       UAM.setLoading($btn, false);
-      $out.html(`<p style="line-height:1.8;color:var(--uam-text)">${UAM.escHtml(d.result)}</p>`);
+      $out.html(`<p style="line-height:1.8;color:var(--tabaix-seo-text)">${UAM.escHtml(d.result)}</p>`);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
 
@@ -220,10 +220,10 @@
   $(document).on('click', '#btn-full-post', function () {
     const $btn = $(this), $out = $('#content-result');
     const topic = $('#bp-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_full_post', {
+    UAM.ajax('tabaix_seo_generate_full_post', {
       topic,
       keywords: $('#bp-keywords').val(),
       word_count: $('#bp-wordcount').val(),
@@ -237,10 +237,10 @@
   $(document).on('click', '#btn-product-desc', function () {
     const $btn = $(this), $out = $('#product-result');
     const name = $('#prod-name').val().trim();
-    if (!name) return $out.html('<div class="uam-notice uam-notice-error">Please enter a product name.</div>');
+    if (!name) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a product name.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_product_desc', {
+    UAM.ajax('tabaix_seo_generate_product_desc', {
       product_name: name,
       features: $('#prod-features').val(),
       audience: $('#prod-audience').val(),
@@ -254,31 +254,31 @@
   $(document).on('click', '#btn-social', function () {
     const $btn = $(this), $out = $('#social-result');
     const topic = $('#social-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
-    $out.html('<div class="uam-loader"><div class="uam-spinner"></div> Crafting posts…</div>');
-    UAM.ajax('uam_generate_social', { topic, url: $('#social-url').val() }, function (d) {
+    $out.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Crafting posts…</div>');
+    UAM.ajax('tabaix_seo_generate_social', { topic, url: $('#social-url').val() }, function (d) {
       UAM.setLoading($btn, false);
       const icons = { twitter: '𝕏', linkedin: 'in', facebook: 'f', instagram: '📸' };
       let html = '';
       const platforms = ['twitter', 'linkedin', 'facebook', 'instagram'];
       platforms.forEach(p => {
         if (d[p]) {
-          html += `<div class="uam-social-card">
-            <div class="uam-social-card-header">
-              <span class="uam-social-platform">${icons[p] || ''} ${p.charAt(0).toUpperCase() + p.slice(1)}</span>
-              <button class="uam-btn uam-btn-ghost uam-btn-sm uam-copy-social" data-platform="${p}">📋 Copy</button>
+          html += `<div class="tabaix-seo-social-card">
+            <div class="tabaix-seo-social-card-header">
+              <span class="tabaix-seo-social-platform">${icons[p] || ''} ${p.charAt(0).toUpperCase() + p.slice(1)}</span>
+              <button class="tabaix-seo-btn tabaix-seo-btn-ghost tabaix-seo-btn-sm tabaix-seo-copy-social" data-platform="${p}">📋 Copy</button>
             </div>
-            <div class="uam-social-text" id="social-${p}">${UAM.escHtml(d[p])}</div>
+            <div class="tabaix-seo-social-text" id="social-${p}">${UAM.escHtml(d[p])}</div>
           </div>`;
         }
       });
-      $out.html(html || '<div class="uam-notice uam-notice-error">No posts generated.</div>');
+      $out.html(html || '<div class="tabaix-seo-notice tabaix-seo-notice-error">No posts generated.</div>');
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
 
   // Copy individual social post
-  $(document).on('click', '.uam-copy-social', function () {
+  $(document).on('click', '.tabaix-seo-copy-social', function () {
     const p = $(this).data('platform');
     const text = $(`#social-${p}`).text();
     navigator.clipboard.writeText(text).then(() => {
@@ -291,10 +291,10 @@
   $(document).on('click', '#btn-email', function () {
     const $btn = $(this), $out = $('#email-result');
     const topic = $('#email-topic').val().trim();
-    if (!topic) return $out.html('<div class="uam-notice uam-notice-error">Please enter a topic.</div>');
+    if (!topic) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a topic.</div>');
     UAM.setLoading($btn, true);
-    $out.html('<div class="uam-loader"><div class="uam-spinner"></div> Drafting email…</div>');
-    UAM.ajax('uam_generate_email', {
+    $out.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Drafting email…</div>');
+    UAM.ajax('tabaix_seo_generate_email', {
       email_type: $('#email-type').val(),
       topic,
       brand: $('#email-brand').val(),
@@ -310,12 +310,12 @@
       ];
       let html = '';
       fields.forEach(([label, val]) => {
-        if (val) html += `<div class="uam-email-field">
-          <div class="uam-email-field-label">${label}</div>
-          <div class="uam-email-field-value">${UAM.escHtml(val)}</div>
+        if (val) html += `<div class="tabaix-seo-email-field">
+          <div class="tabaix-seo-email-field-label">${label}</div>
+          <div class="tabaix-seo-email-field-value">${UAM.escHtml(val)}</div>
         </div>`;
       });
-      $out.html(html || '<div class="uam-notice uam-notice-error">Could not parse email response.</div>');
+      $out.html(html || '<div class="tabaix-seo-notice tabaix-seo-notice-error">Could not parse email response.</div>');
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
 
@@ -330,22 +330,22 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_analyze_readability', { content }, function (d) {
+    UAM.ajax('tabaix_seo_analyze_readability', { content }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
         <div style="margin-bottom:16px">
           ${UAM.renderScoreBar('Readability Score', d.score || 0)}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-          <div><strong style="color:var(--uam-text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Grade Level</strong><br>
-            <span style="font-size:22px;font-weight:800;color:var(--uam-accent)">${UAM.escHtml(d.grade_level || 'N/A')}</span></div>
-          <div><strong style="color:var(--uam-text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Avg Sentence Length</strong><br>
-            <span style="font-size:22px;font-weight:800;color:var(--uam-accent)">${d.avg_sentence_length || 0}</span> words</div>
+          <div><strong style="color:var(--tabaix-seo-text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Grade Level</strong><br>
+            <span style="font-size:22px;font-weight:800;color:var(--tabaix-seo-accent)">${UAM.escHtml(d.grade_level || 'N/A')}</span></div>
+          <div><strong style="color:var(--tabaix-seo-text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Avg Sentence Length</strong><br>
+            <span style="font-size:22px;font-weight:800;color:var(--tabaix-seo-accent)">${d.avg_sentence_length || 0}</span> words</div>
         </div>
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">Summary</strong><br>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Summary</strong><br>
           <p style="margin:6px 0;line-height:1.6">${UAM.escHtml(d.summary || '')}</p></div>
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">Issues Found</strong><br>${UAM.renderList(d.issues)}</div>
-        <div><strong style="color:var(--uam-text2);font-size:12px">Suggestions</strong><br>${UAM.renderList(d.suggestions, '💡')}</div>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Issues Found</strong><br>${UAM.renderList(d.issues)}</div>
+        <div><strong style="color:var(--tabaix-seo-text2);font-size:12px">Suggestions</strong><br>${UAM.renderList(d.suggestions, '💡')}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -357,23 +357,23 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_analyze_keywords', { content, focus_keyword: $('#kw-focus').val() }, function (d) {
+    UAM.ajax('tabaix_seo_analyze_keywords', { content, focus_keyword: $('#kw-focus').val() }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div style="text-align:center;padding:14px;background:rgba(99,102,241,.08);border-radius:10px">
             <div style="font-size:26px;font-weight:800;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${d.focus_keyword_density ?? 'N/A'}${d.focus_keyword_density != null ? '%' : ''}</div>
-            <div style="font-size:11px;color:var(--uam-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Keyword Density</div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Keyword Density</div>
           </div>
           <div style="text-align:center;padding:14px;background:rgba(99,102,241,.08);border-radius:10px">
             <div style="font-size:26px;font-weight:800;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">${d.focus_keyword_count ?? 'N/A'}</div>
-            <div style="font-size:11px;color:var(--uam-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Keyword Count</div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Keyword Count</div>
           </div>
         </div>
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">Recommended Keywords</strong><br>${UAM.renderChips(d.recommended_keywords)}</div>
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">LSI Keywords</strong><br>${UAM.renderChips(d.lsi_keywords, 'var(--uam-accent3)')}</div>
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">Keyword Gaps</strong><br>${UAM.renderChips(d.keyword_gaps, 'var(--uam-amber)')}</div>
-        <div><strong style="color:var(--uam-text2);font-size:12px">Placement Tips</strong><br>${UAM.renderList(d.placement_suggestions, '📍')}</div>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Recommended Keywords</strong><br>${UAM.renderChips(d.recommended_keywords)}</div>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">LSI Keywords</strong><br>${UAM.renderChips(d.lsi_keywords, 'var(--tabaix-seo-accent3)')}</div>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Keyword Gaps</strong><br>${UAM.renderChips(d.keyword_gaps, 'var(--tabaix-seo-amber)')}</div>
+        <div><strong style="color:var(--tabaix-seo-text2);font-size:12px">Placement Tips</strong><br>${UAM.renderList(d.placement_suggestions, '📍')}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -385,20 +385,20 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_check_originality', { content }, function (d) {
+    UAM.ajax('tabaix_seo_check_originality', { content }, function (d) {
       UAM.setLoading($btn, false);
       const scoreColor = d.originality_score >= 75 ? '#10b981' : d.originality_score >= 45 ? '#f59e0b' : '#ef4444';
       const badgeMap = { unique: 'approve', generic: 'hold', 'likely-duplicate': 'spam' };
       $out.html(`
         <div style="text-align:center;padding:20px 0">
           <div style="font-size:52px;font-weight:900;color:${scoreColor}">${d.originality_score || 0}<small style="font-size:22px">%</small></div>
-          <div style="font-size:12px;color:var(--uam-text2);margin-top:4px">Originality Score</div>
-          <span class="uam-badge uam-badge-${badgeMap[d.assessment] || 'hold'}" style="margin-top:10px">${d.assessment || 'N/A'}</span>
+          <div style="font-size:12px;color:var(--tabaix-seo-text2);margin-top:4px">Originality Score</div>
+          <span class="tabaix-seo-badge tabaix-seo-badge-${badgeMap[d.assessment] || 'hold'}" style="margin-top:10px">${d.assessment || 'N/A'}</span>
         </div>
         ${UAM.renderScoreBar('Score', d.originality_score || 0)}
-        <div style="margin-bottom:12px"><strong style="color:var(--uam-text2);font-size:12px">Generic Phrases Detected</strong><br>${UAM.renderChips(d.generic_phrases, 'var(--uam-amber)')}</div>
-        <div><strong style="color:var(--uam-text2);font-size:12px">Rewrite Suggestions</strong><br>${UAM.renderList(d.rewrite_suggestions, '✏️')}</div>
-        <p style="margin-top:14px;line-height:1.6;color:var(--uam-text2)">${UAM.escHtml(d.summary || '')}</p>
+        <div style="margin-bottom:12px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Generic Phrases Detected</strong><br>${UAM.renderChips(d.generic_phrases, 'var(--tabaix-seo-amber)')}</div>
+        <div><strong style="color:var(--tabaix-seo-text2);font-size:12px">Rewrite Suggestions</strong><br>${UAM.renderList(d.rewrite_suggestions, '✏️')}</div>
+        <p style="margin-top:14px;line-height:1.6;color:var(--tabaix-seo-text2)">${UAM.escHtml(d.summary || '')}</p>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -430,14 +430,14 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_fix_grammar', { content }, function (d) {
+    UAM.ajax('tabaix_seo_fix_grammar', { content }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
         <div style="display:flex;gap:8px;margin-bottom:12px">
-          <button class="uam-btn uam-btn-ghost uam-btn-sm" id="copy-corrected">📋 Copy Corrected</button>
-          <button class="uam-btn uam-btn-secondary uam-btn-sm" id="apply-corrected">⬆️ Apply to Editor</button>
+          <button class="tabaix-seo-btn tabaix-seo-btn-ghost tabaix-seo-btn-sm" id="copy-corrected">📋 Copy Corrected</button>
+          <button class="tabaix-seo-btn tabaix-seo-btn-secondary tabaix-seo-btn-sm" id="apply-corrected">⬆️ Apply to Editor</button>
         </div>
-        <div id="corrected-text" style="line-height:1.8;white-space:pre-wrap;color:var(--uam-text)">${UAM.escHtml(d.result)}</div>
+        <div id="corrected-text" style="line-height:1.8;white-space:pre-wrap;color:var(--tabaix-seo-text)">${UAM.escHtml(d.result)}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -458,29 +458,29 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_grammar_report', { content }, function (d) {
+    UAM.ajax('tabaix_seo_grammar_report', { content }, function (d) {
       UAM.setLoading($btn, false);
       let errHtml = '';
       if (d.errors && d.errors.length) {
         errHtml = d.errors.map(e => `
-          <div style="padding:10px 12px;border:1px solid var(--uam-border2);border-radius:8px;margin-bottom:8px">
+          <div style="padding:10px 12px;border:1px solid var(--tabaix-seo-border2);border-radius:8px;margin-bottom:8px">
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-              <span class="uam-badge uam-badge-${e.type === 'Grammar' ? 'spam' : e.type === 'Spelling' ? 'hold' : 'pending'}">${e.type}</span>
+              <span class="tabaix-seo-badge tabaix-seo-badge-${e.type === 'Grammar' ? 'spam' : e.type === 'Spelling' ? 'hold' : 'pending'}">${e.type}</span>
             </div>
-            <div style="font-size:12px"><del style="color:var(--uam-red)">${UAM.escHtml(e.original)}</del> → <strong style="color:var(--uam-green)">${UAM.escHtml(e.correction)}</strong></div>
-            <div style="font-size:11px;color:var(--uam-text2);margin-top:4px">${UAM.escHtml(e.explanation)}</div>
+            <div style="font-size:12px"><del style="color:var(--tabaix-seo-red)">${UAM.escHtml(e.original)}</del> → <strong style="color:var(--tabaix-seo-green)">${UAM.escHtml(e.correction)}</strong></div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2);margin-top:4px">${UAM.escHtml(e.explanation)}</div>
           </div>`).join('');
       }
       const qualityColor = { excellent: '#10b981', good: '#06b6d4', fair: '#f59e0b', poor: '#ef4444' };
       $out.html(`
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--uam-border2)">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--tabaix-seo-border2)">
           <div style="text-align:center">
-            <div style="font-size:36px;font-weight:800;color:${qualityColor[d.overall_quality] || 'var(--uam-text)'}">${d.error_count || 0}</div>
-            <div style="font-size:11px;color:var(--uam-text2)">Errors Found</div>
+            <div style="font-size:36px;font-weight:800;color:${qualityColor[d.overall_quality] || 'var(--tabaix-seo-text)'}">${d.error_count || 0}</div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2)">Errors Found</div>
           </div>
-          <span class="uam-badge ${d.overall_quality === 'excellent' ? 'uam-badge-approve' : d.overall_quality === 'poor' ? 'uam-badge-spam' : 'uam-badge-pending'}">${d.overall_quality || 'N/A'} Quality</span>
+          <span class="tabaix-seo-badge ${d.overall_quality === 'excellent' ? 'tabaix-seo-badge-approve' : d.overall_quality === 'poor' ? 'tabaix-seo-badge-spam' : 'tabaix-seo-badge-pending'}">${d.overall_quality || 'N/A'} Quality</span>
         </div>
-        ${errHtml || '<div class="uam-empty">✅ No errors found!</div>'}
+        ${errHtml || '<div class="tabaix-seo-empty">✅ No errors found!</div>'}
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -492,7 +492,7 @@
     if (!content) return UAM.showError('Please enter content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_analyze_sentiment', { content }, function (d) {
+    UAM.ajax('tabaix_seo_analyze_sentiment', { content }, function (d) {
       UAM.setLoading($btn, false);
       const badge = { positive: 'approve', neutral: 'hold', negative: 'spam' };
       const emotions = d.emotions || {};
@@ -500,24 +500,24 @@
         UAM.renderScoreBar(em.charAt(0).toUpperCase() + em.slice(1), val)
       ).join('');
       $out.html(`
-        <div style="text-align:center;padding:16px 0;margin-bottom:16px;border-bottom:1px solid var(--uam-border2)">
-          <span class="uam-badge uam-badge-${badge[d.overall_sentiment] || 'hold'}" style="font-size:14px;padding:6px 20px">${d.overall_sentiment || 'N/A'}</span>
-          <div style="font-size:28px;font-weight:800;color:var(--uam-accent);margin:10px 0">${d.sentiment_score > 0 ? '+' : ''}${d.sentiment_score || 0}</div>
-          <div style="font-size:12px;color:var(--uam-text2)">Sentiment Score (-100 to +100)</div>
+        <div style="text-align:center;padding:16px 0;margin-bottom:16px;border-bottom:1px solid var(--tabaix-seo-border2)">
+          <span class="tabaix-seo-badge tabaix-seo-badge-${badge[d.overall_sentiment] || 'hold'}" style="font-size:14px;padding:6px 20px">${d.overall_sentiment || 'N/A'}</span>
+          <div style="font-size:28px;font-weight:800;color:var(--tabaix-seo-accent);margin:10px 0">${d.sentiment_score > 0 ? '+' : ''}${d.sentiment_score || 0}</div>
+          <div style="font-size:12px;color:var(--tabaix-seo-text2)">Sentiment Score (-100 to +100)</div>
         </div>
         <div style="margin-bottom:14px">
-          <strong style="color:var(--uam-text2);font-size:12px">Tone</strong>
+          <strong style="color:var(--tabaix-seo-text2);font-size:12px">Tone</strong>
           <p style="margin:6px 0">${UAM.escHtml(d.tone || '')}</p>
         </div>
         <div style="margin-bottom:14px">
-          <strong style="color:var(--uam-text2);font-size:12px">Emotional Breakdown</strong>
+          <strong style="color:var(--tabaix-seo-text2);font-size:12px">Emotional Breakdown</strong>
           <div style="margin-top:10px">${emotionBars}</div>
         </div>
         <div style="margin-bottom:14px">
-          <strong style="color:var(--uam-text2);font-size:12px">Predicted Audience Reaction</strong>
+          <strong style="color:var(--tabaix-seo-text2);font-size:12px">Predicted Audience Reaction</strong>
           <p style="margin:6px 0;line-height:1.6">${UAM.escHtml(d.audience_reaction || '')}</p>
         </div>
-        <div><strong style="color:var(--uam-text2);font-size:12px">Suggestions</strong><br>${UAM.renderList(d.suggestions, '💡')}</div>
+        <div><strong style="color:var(--tabaix-seo-text2);font-size:12px">Suggestions</strong><br>${UAM.renderList(d.suggestions, '💡')}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -530,26 +530,26 @@
     if (!title || !content) return UAM.showError('Please enter a title and content.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_predict_performance', { title, content, niche: $('#perf-niche').val() }, function (d) {
+    UAM.ajax('tabaix_seo_predict_performance', { title, content, niche: $('#perf-niche').val() }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
           ${[['Overall Score', d.predicted_score], ['SEO Score', d.seo_score], ['Engagement', d.engagement_score]].map(([label, val]) => `
             <div style="text-align:center;padding:14px;background:rgba(99,102,241,.08);border-radius:10px">
-              <div style="font-size:28px;font-weight:800;color:var(--uam-accent)">${val || 0}<small style="font-size:14px">%</small></div>
-              <div style="font-size:11px;color:var(--uam-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">${label}</div>
+              <div style="font-size:28px;font-weight:800;color:var(--tabaix-seo-accent)">${val || 0}<small style="font-size:14px">%</small></div>
+              <div style="font-size:11px;color:var(--tabaix-seo-text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">${label}</div>
             </div>`).join('')}
         </div>
         <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
-          <strong style="color:var(--uam-text2);font-size:12px">Viral Potential:</strong>
-          <span class="uam-badge ${d.viral_potential === 'high' ? 'uam-badge-approve' : d.viral_potential === 'medium' ? 'uam-badge-pending' : 'uam-badge-spam'}">${d.viral_potential || 'N/A'}</span>
+          <strong style="color:var(--tabaix-seo-text2);font-size:12px">Viral Potential:</strong>
+          <span class="tabaix-seo-badge ${d.viral_potential === 'high' ? 'tabaix-seo-badge-approve' : d.viral_potential === 'medium' ? 'tabaix-seo-badge-pending' : 'tabaix-seo-badge-spam'}">${d.viral_potential || 'N/A'}</span>
         </div>
         ${UAM.renderScoreBar('Predicted Score', d.predicted_score || 0)}
         ${UAM.renderScoreBar('SEO Score', d.seo_score || 0)}
         ${UAM.renderScoreBar('Engagement', d.engagement_score || 0)}
-        <div style="margin:14px 0 10px"><strong style="color:var(--uam-green);font-size:12px">✓ Strengths</strong><br>${UAM.renderList(d.strengths)}</div>
-        <div style="margin-bottom:10px"><strong style="color:var(--uam-amber);font-size:12px">⚠ Weaknesses</strong><br>${UAM.renderList(d.weaknesses)}</div>
-        <div><strong style="color:var(--uam-accent);font-size:12px">💡 Recommendations</strong><br>${UAM.renderList(d.recommendations, '💡')}</div>
+        <div style="margin:14px 0 10px"><strong style="color:var(--tabaix-seo-green);font-size:12px">✓ Strengths</strong><br>${UAM.renderList(d.strengths)}</div>
+        <div style="margin-bottom:10px"><strong style="color:var(--tabaix-seo-amber);font-size:12px">⚠ Weaknesses</strong><br>${UAM.renderList(d.weaknesses)}</div>
+        <div><strong style="color:var(--tabaix-seo-accent);font-size:12px">💡 Recommendations</strong><br>${UAM.renderList(d.recommendations, '💡')}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -561,7 +561,7 @@
     if (!title) return UAM.showError('Please enter a post title.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_meta', { title, content: $('#meta-content').val(), keyword: $('#meta-keyword').val() }, function (d) {
+    UAM.ajax('tabaix_seo_generate_meta', { title, content: $('#meta-content').val(), keyword: $('#meta-keyword').val() }, function (d) {
       UAM.setLoading($btn, false);
       const seoLen = (d.seo_title || '').length;
       const metaLen = (d.meta_description || '').length;
@@ -569,21 +569,21 @@
       const metaOk = metaLen >= 150 && metaLen <= 160;
       $out.html(`
         <div style="margin-bottom:16px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--uam-accent);margin-bottom:6px">SEO Title</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tabaix-seo-accent);margin-bottom:6px">SEO Title</div>
           <div style="font-size:16px;font-weight:700;color:#60a5fa;margin-bottom:4px">${UAM.escHtml(d.seo_title || '')}</div>
-          <div style="font-size:11px;color:${titleOk ? 'var(--uam-green)' : 'var(--uam-amber)'}">${seoLen} chars ${titleOk ? '✓ Optimal' : '⚠ Adjust length'}</div>
+          <div style="font-size:11px;color:${titleOk ? 'var(--tabaix-seo-green)' : 'var(--tabaix-seo-amber)'}">${seoLen} chars ${titleOk ? '✓ Optimal' : '⚠ Adjust length'}</div>
         </div>
         <div style="margin-bottom:16px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--uam-accent);margin-bottom:6px">Meta Description</div>
-          <div style="font-size:13px;color:var(--uam-text2);line-height:1.6;margin-bottom:4px">${UAM.escHtml(d.meta_description || '')}</div>
-          <div style="font-size:11px;color:${metaOk ? 'var(--uam-green)' : 'var(--uam-amber)'}">${metaLen} chars ${metaOk ? '✓ Optimal' : '⚠ Adjust length'}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tabaix-seo-accent);margin-bottom:6px">Meta Description</div>
+          <div style="font-size:13px;color:var(--tabaix-seo-text2);line-height:1.6;margin-bottom:4px">${UAM.escHtml(d.meta_description || '')}</div>
+          <div style="font-size:11px;color:${metaOk ? 'var(--tabaix-seo-green)' : 'var(--tabaix-seo-amber)'}">${metaLen} chars ${metaOk ? '✓ Optimal' : '⚠ Adjust length'}</div>
         </div>
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--uam-accent);margin-bottom:6px">Focus Keyword</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tabaix-seo-accent);margin-bottom:6px">Focus Keyword</div>
           ${UAM.renderChips([d.focus_keyword || 'N/A'])}
         </div>
         <div style="margin-top:16px;padding:12px;background:rgba(0,0,0,.2);border-radius:8px">
-          <div style="font-size:11px;color:var(--uam-text3);margin-bottom:8px">Google Search Preview</div>
+          <div style="font-size:11px;color:var(--tabaix-seo-text3);margin-bottom:8px">Google Search Preview</div>
           <div style="font-size:18px;color:#60a5fa;font-weight:500">${UAM.escHtml(d.seo_title || '')}</div>
           <div style="font-size:13px;color:#4ade80;margin:2px 0">example.com/your-post-url</div>
           <div style="font-size:13px;color:#94a3b8;line-height:1.5">${UAM.escHtml(d.meta_description || '')}</div>
@@ -600,9 +600,9 @@
     const title = $('#img-title').val().trim();
     if (!title) return alert('Please enter a post title.');
     UAM.setLoading($btn, true);
-    $area.html('<div class="uam-loader" style="height:280px;flex-direction:column;gap:14px"><div class="uam-spinner" style="width:36px;height:36px;border-width:3px"></div><p style="margin:0;color:var(--uam-text2)">Generating your image…</p></div>');
+    $area.html('<div class="tabaix-seo-loader" style="height:280px;flex-direction:column;gap:14px"><div class="tabaix-seo-spinner" style="width:36px;height:36px;border-width:3px"></div><p style="margin:0;color:var(--tabaix-seo-text2)">Generating your image…</p></div>');
     $actions.hide();
-    UAM.ajax('uam_generate_image', {
+    UAM.ajax('tabaix_seo_generate_image', {
       post_title: title,
       post_excerpt: $('#img-excerpt').val(),
       style: $('#img-style').val(),
@@ -619,7 +619,7 @@
       }
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $area.html(`<div class="uam-notice uam-notice-error" style="margin:20px">⚠️ ${UAM.escHtml(msg)}</div>`);
+      $area.html(`<div class="tabaix-seo-notice tabaix-seo-notice-error" style="margin:20px">⚠️ ${UAM.escHtml(msg)}</div>`);
     });
   });
   $(document).on('click', '#btn-set-featured', function () {
@@ -628,7 +628,7 @@
     if (!attach_id || post_id === '0') return UAM.showToast('Please save image to library and select a post first.', 'error');
     const $btn = $(this);
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_set_featured_image', { attach_id, post_id }, function (d) {
+    UAM.ajax('tabaix_seo_set_featured_image', { attach_id, post_id }, function (d) {
       UAM.setLoading($btn, false);
       UAM.showToast(d.message);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showToast(msg, 'error'); });
@@ -641,17 +641,17 @@
     if (!product) return UAM.showError('Please enter a product name.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_product_image_prompt', {
+    UAM.ajax('tabaix_seo_generate_product_image_prompt', {
       product_name: product,
       variant: $('#pi-variant').val(),
       style: $('#pi-style').val(),
     }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
-        <div style="background:rgba(99,102,241,.08);border:1px dashed var(--uam-border);border-radius:10px;padding:16px;line-height:1.7;font-size:13px">
+        <div style="background:rgba(99,102,241,.08);border:1px dashed var(--tabaix-seo-border);border-radius:10px;padding:16px;line-height:1.7;font-size:13px">
           ${UAM.escHtml(d.result)}
         </div>
-        <button class="uam-btn uam-btn-ghost uam-btn-sm" style="margin-top:10px" id="copy-img-prompt">📋 Copy Prompt</button>
+        <button class="tabaix-seo-btn tabaix-seo-btn-ghost tabaix-seo-btn-sm" style="margin-top:10px" id="copy-img-prompt">📋 Copy Prompt</button>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -669,7 +669,7 @@
     const $btn = $(this), $out = $('#optimize-result');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_image_optimization_tips', {
+    UAM.ajax('tabaix_seo_image_optimization_tips', {
       filename: $('#opt-filename').val(),
       file_size_kb: $('#opt-size').val(),
       dimensions: $('#opt-dimensions').val(),
@@ -678,21 +678,21 @@
       $out.html(`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div style="padding:14px;background:rgba(99,102,241,.08);border-radius:10px;text-align:center">
-            <div style="font-size:26px;font-weight:800;color:var(--uam-green)">${d.recommended_size_kb || 'N/A'}<small style="font-size:14px">KB</small></div>
-            <div style="font-size:11px;color:var(--uam-text2);margin-top:4px">Target File Size</div>
+            <div style="font-size:26px;font-weight:800;color:var(--tabaix-seo-green)">${d.recommended_size_kb || 'N/A'}<small style="font-size:14px">KB</small></div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2);margin-top:4px">Target File Size</div>
           </div>
           <div style="padding:14px;background:rgba(99,102,241,.08);border-radius:10px;text-align:center">
-            <div style="font-size:26px;font-weight:800;color:var(--uam-accent)">${d.estimated_savings_percent || 0}<small style="font-size:14px">%</small></div>
-            <div style="font-size:11px;color:var(--uam-text2);margin-top:4px">Estimated Savings</div>
+            <div style="font-size:26px;font-weight:800;color:var(--tabaix-seo-accent)">${d.estimated_savings_percent || 0}<small style="font-size:14px">%</small></div>
+            <div style="font-size:11px;color:var(--tabaix-seo-text2);margin-top:4px">Estimated Savings</div>
           </div>
         </div>
         <div style="margin-bottom:12px">
-          <strong style="color:var(--uam-text2);font-size:12px">Recommended Format</strong>
-          ${UAM.renderChips([d.format_suggestion || 'webp'], 'var(--uam-green)')}
-          <br><strong style="color:var(--uam-text2);font-size:12px">Recommended Dimensions</strong>
+          <strong style="color:var(--tabaix-seo-text2);font-size:12px">Recommended Format</strong>
+          ${UAM.renderChips([d.format_suggestion || 'webp'], 'var(--tabaix-seo-green)')}
+          <br><strong style="color:var(--tabaix-seo-text2);font-size:12px">Recommended Dimensions</strong>
           ${UAM.renderChips([d.recommended_dimensions || 'N/A'])}
         </div>
-        <div><strong style="color:var(--uam-text2);font-size:12px">Optimization Tips</strong><br>${UAM.renderList(d.optimization_tips, '⚡')}</div>
+        <div><strong style="color:var(--tabaix-seo-text2);font-size:12px">Optimization Tips</strong><br>${UAM.renderList(d.optimization_tips, '⚡')}</div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -706,18 +706,18 @@
     if (!comment_text) return UAM.showError('Please enter a comment.', $out);
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_moderate_comment', { comment_text }, function (d) {
+    UAM.ajax('tabaix_seo_moderate_comment', { comment_text }, function (d) {
       UAM.setLoading($btn, false);
       const decBadge = { approve: 'approve', hold: 'hold', spam: 'spam', reject: 'spam' };
       $out.html(`
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-          <span class="uam-badge uam-badge-${decBadge[d.decision] || 'hold'}" style="font-size:14px;padding:6px 16px">${(d.decision || 'N/A').toUpperCase()}</span>
-          <span style="font-size:12px;color:var(--uam-text2)">Confidence: <strong style="color:var(--uam-text)">${d.confidence || 0}%</strong></span>
+          <span class="tabaix-seo-badge tabaix-seo-badge-${decBadge[d.decision] || 'hold'}" style="font-size:14px;padding:6px 16px">${(d.decision || 'N/A').toUpperCase()}</span>
+          <span style="font-size:12px;color:var(--tabaix-seo-text2)">Confidence: <strong style="color:var(--tabaix-seo-text)">${d.confidence || 0}%</strong></span>
         </div>
         ${UAM.renderScoreBar('Toxicity Score', d.toxicity_score || 0)}
-        <div style="margin:14px 0 8px"><strong style="color:var(--uam-text2);font-size:12px">Reasons</strong><br>${UAM.renderList(d.reasons)}</div>
-        <div style="margin-bottom:8px"><strong style="color:var(--uam-text2);font-size:12px">Spam Indicators</strong><br>${UAM.renderChips(d.spam_indicators, 'var(--uam-red)')}</div>
-        <p style="font-size:12px;color:var(--uam-text2);margin-top:10px">${UAM.escHtml(d.summary || '')}</p>
+        <div style="margin:14px 0 8px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Reasons</strong><br>${UAM.renderList(d.reasons)}</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--tabaix-seo-text2);font-size:12px">Spam Indicators</strong><br>${UAM.renderChips(d.spam_indicators, 'var(--tabaix-seo-red)')}</div>
+        <p style="font-size:12px;color:var(--tabaix-seo-text2);margin-top:10px">${UAM.escHtml(d.summary || '')}</p>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
   });
@@ -726,7 +726,7 @@
   $(document).on('click', '#btn-bulk-moderate', function () {
     const $btn = $(this);
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_bulk_moderate', { limit: 10 }, function (d) {
+    UAM.ajax('tabaix_seo_bulk_moderate', { limit: 10 }, function (d) {
       UAM.setLoading($btn, false);
       const decBadge = { approve: 'approve', hold: 'hold', spam: 'spam', reject: 'spam' };
       if (d.results && d.results.length) {
@@ -734,8 +734,8 @@
           const analysis = r.analysis || {};
           const $badge = $(`#status-${r.comment_id}`);
           const decision = analysis.decision || 'hold';
-          $badge.removeClass('uam-badge-pending')
-            .addClass(`uam-badge-${decBadge[decision] || 'hold'}`)
+          $badge.removeClass('tabaix-seo-badge-pending')
+            .addClass(`tabaix-seo-badge-${decBadge[decision] || 'hold'}`)
             .text(decision.toUpperCase());
         });
       }
@@ -748,42 +748,42 @@
   $(document).on('click', '#btn-analytics-report', function () {
     const $btn = $(this), $out = $('#analytics-report-result');
     UAM.setLoading($btn, true);
-    $out.html('<div class="uam-loader" style="height:120px"><div class="uam-spinner"></div> Generating AI report…</div>');
-    UAM.ajax('uam_analytics_report', {}, function (d) {
+    $out.html('<div class="tabaix-seo-loader" style="height:120px"><div class="tabaix-seo-spinner"></div> Generating AI report…</div>');
+    UAM.ajax('tabaix_seo_analytics_report', {}, function (d) {
       UAM.setLoading($btn, false);
       const report = d.report || {};
       const raw = d.data || {};
-      const gradeMap = { A: 'uam-badge-approve', B: 'uam-badge-approve', C: 'uam-badge-pending', D: 'uam-badge-spam', F: 'uam-badge-spam' };
+      const gradeMap = { A: 'tabaix-seo-badge-approve', B: 'tabaix-seo-badge-approve', C: 'tabaix-seo-badge-pending', D: 'tabaix-seo-badge-spam', F: 'tabaix-seo-badge-spam' };
       $out.html(`
-        <div class="uam-analytics-report">
-          <div class="uam-report-summary">
-            <div class="uam-grade-badge">${report.performance_grade || 'B'}</div>
+        <div class="tabaix-seo-analytics-report">
+          <div class="tabaix-seo-report-summary">
+            <div class="tabaix-seo-grade-badge">${report.performance_grade || 'B'}</div>
             <h4>Executive Summary</h4>
-            <p style="line-height:1.7;color:var(--uam-text2)">${UAM.escHtml(report.executive_summary || '')}</p>
+            <p style="line-height:1.7;color:var(--tabaix-seo-text2)">${UAM.escHtml(report.executive_summary || '')}</p>
           </div>
-          <div class="uam-report-card">
+          <div class="tabaix-seo-report-card">
             <h4>📊 Site Stats</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               ${[['Est. Page Views', raw.pageviews], ['Est. Visitors', raw.visitors], ['Bounce Rate', raw.bounce_rate + '%'], ['Avg Session', raw.session_duration + 's']].map(([l, v]) =>
         `<div style="padding:10px;background:rgba(99,102,241,.06);border-radius:8px;text-align:center">
-                  <div style="font-size:20px;font-weight:800;color:var(--uam-accent)">${v}</div>
-                  <div style="font-size:10px;color:var(--uam-text2)">${l}</div>
+                  <div style="font-size:20px;font-weight:800;color:var(--tabaix-seo-accent)">${v}</div>
+                  <div style="font-size:10px;color:var(--tabaix-seo-text2)">${l}</div>
                 </div>`).join('')}
             </div>
           </div>
-          <div class="uam-report-card">
+          <div class="tabaix-seo-report-card">
             <h4>✅ Key Highlights</h4>
             ${UAM.renderList(report.key_highlights, '✓')}
           </div>
-          <div class="uam-report-card">
+          <div class="tabaix-seo-report-card">
             <h4>⚠️ Areas of Concern</h4>
             ${UAM.renderList(report.areas_of_concern, '⚠')}
           </div>
-          <div class="uam-report-card">
+          <div class="tabaix-seo-report-card">
             <h4>💡 Recommendations</h4>
             ${UAM.renderList(report.recommendations, '💡')}
           </div>
-          <div class="uam-report-card">
+          <div class="tabaix-seo-report-card">
             <h4>🚀 Next Steps</h4>
             ${UAM.renderList(report.next_steps, '→')}
           </div>
@@ -806,8 +806,8 @@
       $('#alt-edit-field').val(existingAlt);
       $('#alt-image-preview').show();
       $('#alt-result').html(existingAlt
-        ? `<div class="uam-notice" style="background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2);color:#10b981">✓ This image already has alt text. You can regenerate it below.</div>`
-        : `<div class="uam-placeholder">No alt text yet. Click "Generate & Save" to create one.</div>`);
+        ? `<div class="tabaix-seo-notice" style="background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2);color:#10b981">✓ This image already has alt text. You can regenerate it below.</div>`
+        : `<div class="tabaix-seo-placeholder">No alt text yet. Click "Generate & Save" to create one.</div>`);
     } else {
       $('#alt-image-preview').hide();
     }
@@ -817,18 +817,18 @@
   $(document).on('click', '#btn-preview-alt', function () {
     const $btn = $(this), $out = $('#alt-result');
     const id = $('#alt-attachment-id').val();
-    if (!id) return $out.html('<div class="uam-notice uam-notice-error">Please select an image first.</div>');
+    if (!id) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please select an image first.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_alt_text', { attachment_id: id, save: 0 }, function (d) {
+    UAM.ajax('tabaix_seo_generate_alt_text', { attachment_id: id, save: 0 }, function (d) {
       UAM.setLoading($btn, false);
       $('#alt-edit-field').val(d.alt_text);
       $('#alt-image-preview').show();
       $out.html(`
-        <div style="background:rgba(99,102,241,.08);border:1px solid var(--uam-border2);border-radius:10px;padding:16px;line-height:1.6">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--uam-accent);margin-bottom:8px">Generated Alt Text (Preview)</div>
-          <p style="margin:0;font-size:14px;color:var(--uam-text)">${UAM.escHtml(d.alt_text)}</p>
-          <div style="font-size:11px;color:var(--uam-text3);margin-top:8px">${d.alt_text.length} characters • Not saved yet — click "Generate & Save" to apply</div>
+        <div style="background:rgba(99,102,241,.08);border:1px solid var(--tabaix-seo-border2);border-radius:10px;padding:16px;line-height:1.6">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tabaix-seo-accent);margin-bottom:8px">Generated Alt Text (Preview)</div>
+          <p style="margin:0;font-size:14px;color:var(--tabaix-seo-text)">${UAM.escHtml(d.alt_text)}</p>
+          <div style="font-size:11px;color:var(--tabaix-seo-text3);margin-top:8px">${d.alt_text.length} characters • Not saved yet — click "Generate & Save" to apply</div>
         </div>
       `);
     }, function (msg) { UAM.setLoading($btn, false); UAM.showError(msg, $out); });
@@ -838,10 +838,10 @@
   $(document).on('click', '#btn-gen-alt', function () {
     const $btn = $(this), $out = $('#alt-result');
     const id = $('#alt-attachment-id').val();
-    if (!id) return $out.html('<div class="uam-notice uam-notice-error">Please select an image first.</div>');
+    if (!id) return $out.html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please select an image first.</div>');
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
-    UAM.ajax('uam_generate_alt_text', { attachment_id: id, save: 1 }, function (d) {
+    UAM.ajax('tabaix_seo_generate_alt_text', { attachment_id: id, save: 1 }, function (d) {
       UAM.setLoading($btn, false);
       $('#alt-edit-field').val(d.alt_text);
       $('#alt-image-preview').show();
@@ -851,8 +851,8 @@
             <span style="font-size:16px">✅</span>
             <strong style="color:#10b981;font-size:13px">Alt text generated & saved!</strong>
           </div>
-          <p style="margin:0;font-size:14px;color:var(--uam-text)">${UAM.escHtml(d.alt_text)}</p>
-          <div style="font-size:11px;color:var(--uam-text3);margin-top:8px">${d.alt_text.length} characters</div>
+          <p style="margin:0;font-size:14px;color:var(--tabaix-seo-text)">${UAM.escHtml(d.alt_text)}</p>
+          <div style="font-size:11px;color:var(--tabaix-seo-text3);margin-top:8px">${d.alt_text.length} characters</div>
         </div>
       `);
       // Update the dropdown option to show ✓
@@ -880,7 +880,7 @@
 
     const $btn = $(this);
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_save_alt_text', { attachment_id: id, alt_text: alt }, function (d) {
+    UAM.ajax('tabaix_seo_save_alt_text', { attachment_id: id, alt_text: alt }, function (d) {
       UAM.setLoading($btn, false);
       UAM.showToast('✨ Alt text saved successfully!');
     }, function (msg) {
@@ -894,48 +894,48 @@
     const $btn = $(this), $bulkOut = $('#alt-bulk-results'), $out = $('#alt-result');
     const limit = $('#alt-bulk-limit').val();
     UAM.setLoading($btn, true);
-    $bulkOut.html('<div class="uam-loader"><div class="uam-spinner"></div> Processing images…</div>');
+    $bulkOut.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Processing images…</div>');
     $out.html('');
-    UAM.ajax('uam_bulk_generate_alt_text', { limit }, function (d) {
+    UAM.ajax('tabaix_seo_bulk_generate_alt_text', { limit }, function (d) {
       UAM.setLoading($btn, false);
       if (!d.results || !d.results.length) {
-        $bulkOut.html('<div class="uam-notice" style="color:#10b981">✅ All images already have alt text!</div>');
+        $bulkOut.html('<div class="tabaix-seo-notice" style="color:#10b981">✅ All images already have alt text!</div>');
         return;
       }
       const rows = d.results.map(r => `
-        <div style="padding:10px 12px;border:1px solid var(--uam-border2);border-radius:8px;margin-bottom:8px">
+        <div style="padding:10px 12px;border:1px solid var(--tabaix-seo-border2);border-radius:8px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <strong style="font-size:12px;color:var(--uam-text)">${UAM.escHtml(r.filename)}</strong>
-            ${r.error ? '<span class="uam-badge uam-badge-spam">Failed</span>' : '<span class="uam-badge uam-badge-approve">✓ Saved</span>'}
+            <strong style="font-size:12px;color:var(--tabaix-seo-text)">${UAM.escHtml(r.filename)}</strong>
+            ${r.error ? '<span class="tabaix-seo-badge tabaix-seo-badge-spam">Failed</span>' : '<span class="tabaix-seo-badge tabaix-seo-badge-approve">✓ Saved</span>'}
           </div>
-          ${r.alt_text ? `<p style="margin:0;font-size:12px;color:var(--uam-text2)">${UAM.escHtml(r.alt_text)}</p>` : ''}
-          ${r.error ? `<p style="margin:4px 0 0;font-size:11px;color:var(--uam-red)">${UAM.escHtml(r.error)}</p>` : ''}
+          ${r.alt_text ? `<p style="margin:0;font-size:12px;color:var(--tabaix-seo-text2)">${UAM.escHtml(r.alt_text)}</p>` : ''}
+          ${r.error ? `<p style="margin:4px 0 0;font-size:11px;color:var(--tabaix-seo-red)">${UAM.escHtml(r.error)}</p>` : ''}
         </div>
       `).join('');
       $bulkOut.html(`
-        <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--uam-text)">
+        <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--tabaix-seo-text)">
           Processed ${d.count} image${d.count !== 1 ? 's' : ''}
         </div>
         ${rows}
       `);
-    }, function (msg) { UAM.setLoading($btn, false); $bulkOut.html(`<div class="uam-notice uam-notice-error">Error: ${UAM.escHtml(msg)}</div>`); });
+    }, function (msg) { UAM.setLoading($btn, false); $bulkOut.html(`<div class="tabaix-seo-notice tabaix-seo-notice-error">Error: ${UAM.escHtml(msg)}</div>`); });
   });
 
   // Auto-generate toggle (saves setting via admin settings)
   $(document).on('change', '#alt-auto-toggle', function () {
     const enabled = this.checked ? 1 : 0;
     // This setting is saved via the Settings page form -- just show a reminder
-    const $label = $(this).closest('.uam-toggle-group').find('span');
+    const $label = $(this).closest('.tabaix-seo-toggle-group').find('span');
     $label.text(enabled ? 'Auto-generate on upload (save in Settings to persist)' : 'Auto-generate on upload');
   });
 
   // Media library quick-generate link
-  $(document).on('click', '.uam-gen-alt-link', function (e) {
+  $(document).on('click', '.tabaix-seo-gen-alt-link', function (e) {
     e.preventDefault();
     const id = $(this).data('id');
     const $link = $(this);
     $link.text('Generating…');
-    UAM.ajax('uam_generate_alt_text', { attachment_id: id, save: 1 }, function (d) {
+    UAM.ajax('tabaix_seo_generate_alt_text', { attachment_id: id, save: 1 }, function (d) {
       $link.closest('div').find('span:first').html(`<span style="color:#10b981;font-size:11px;font-weight:600">${d.alt_text.substring(0, 40)}${d.alt_text.length > 40 ? '…' : ''}</span><br><span style="font-size:10px;color:#6366f1">✦ AI Generated</span>`);
       $link.text('✓ Done');
     }, function (msg) {
@@ -963,7 +963,7 @@
     }
 
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_save_seo_meta', { post_id, seo_title, meta_description, focus_keyword }, function (d) {
+    UAM.ajax('tabaix_seo_save_seo_meta', { post_id, seo_title, meta_description, focus_keyword }, function (d) {
       UAM.setLoading($btn, false);
       const toast = $(`<div style="position:fixed;top:28px;right:28px;z-index:99999;background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:12px 20px;border-radius:10px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(16,185,129,.45)">
         💾 SEO meta saved to post!
@@ -985,7 +985,7 @@
   function testProvider(provider, $btn, $result) {
     $result.html('<span style="color:#94a3b8">🔄 Testing…</span>');
     UAM.setLoading($btn, true);
-    UAM.ajax('uam_test_connection', { provider }, function (d) {
+    UAM.ajax('tabaix_seo_test_connection', { provider }, function (d) {
       UAM.setLoading($btn, false);
       $result.html('<span style="color:#10b981;font-weight:600">✅ Connection successful! API key is valid.</span>');
     }, function (msg) {
@@ -1013,7 +1013,7 @@
     frame.on('select', function () {
       const attachment = frame.state().get('selection').first().toJSON();
       $('#vision-admin-attach-id').val(attachment.id);
-      $('#vision-admin-preview').html(`<img src="${attachment.url}" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--uam-border)">`);
+      $('#vision-admin-preview').html(`<img src="${attachment.url}" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--tabaix-seo-border)">`);
     });
     frame.open();
   });
@@ -1026,26 +1026,26 @@
     UAM.setLoading($btn, true);
     UAM.showLoader($out);
 
-    UAM.ajax('uam_analyze_vision', { attachment_id: attach_id }, function (d) {
+    UAM.ajax('tabaix_seo_analyze_vision', { attachment_id: attach_id }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
-        <div class="uam-vision-result-box" style="background:rgba(99,102,241,.08);border:1px solid var(--uam-border);border-radius:10px;padding:16px" 
+        <div class="tabaix-seo-vision-result-box" style="background:rgba(99,102,241,.08);border:1px solid var(--tabaix-seo-border);border-radius:10px;padding:16px" 
              data-title="${UAM.escHtml(d.title)}" data-alt="${UAM.escHtml(d.alt)}">
           <div style="margin-bottom:12px">
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--uam-text2)">SEO Title</label>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--tabaix-seo-text2)">SEO Title</label>
             <div style="margin-top:4px;font-weight:600" class="vis-title">${UAM.escHtml(d.title)}</div>
           </div>
           <div style="margin-bottom:12px">
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--uam-text2)">Alt Text</label>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--tabaix-seo-text2)">Alt Text</label>
             <div style="margin-top:4px" class="vis-alt">${UAM.escHtml(d.alt)}</div>
           </div>
           <div style="margin-bottom:12px">
-            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--uam-text2)">Caption</label>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--tabaix-seo-text2)">Caption</label>
             <div style="margin-top:4px">${UAM.escHtml(d.caption || 'None')}</div>
           </div>
           <div style="display:flex;gap:10px;margin-top:15px">
-            <button class="uam-btn uam-btn-ghost uam-btn-sm" id="btn-copy-vision-json" style="flex:1">📋 Copy JSON</button>
-            <button class="uam-btn uam-btn-primary uam-btn-sm" id="btn-vision-apply-seo" style="flex:1">✅ Apply to SEO Meta</button>
+            <button class="tabaix-seo-btn tabaix-seo-btn-ghost tabaix-seo-btn-sm" id="btn-copy-vision-json" style="flex:1">📋 Copy JSON</button>
+            <button class="tabaix-seo-btn tabaix-seo-btn-primary tabaix-seo-btn-sm" id="btn-vision-apply-seo" style="flex:1">✅ Apply to SEO Meta</button>
           </div>
         </div>
       `);
@@ -1064,10 +1064,10 @@
           return;
         }
         const $applyBtn = $(this);
-        const container = $applyBtn.closest('.uam-vision-result-box');
+        const container = $applyBtn.closest('.tabaix-seo-vision-result-box');
 
         UAM.setLoading($applyBtn, true);
-        UAM.ajax('uam_save_seo_meta', {
+        UAM.ajax('tabaix_seo_save_seo_meta', {
           post_id: postId,
           seo_title: container.data('title'),
           meta_description: container.data('alt')
@@ -1091,8 +1091,8 @@
 
   function renderStatusIcon(has) {
     return has
-      ? '<span class="uam-audit-status pass">✓</span>'
-      : '<span class="uam-audit-status fail">✗</span>';
+      ? '<span class="tabaix-seo-audit-status pass">✓</span>'
+      : '<span class="tabaix-seo-audit-status fail">✗</span>';
   }
 
   function scoreClass(score) {
@@ -1105,7 +1105,7 @@
     const score = post.seo_score || 0;
     return `<tr data-post-id="${post.ID}" data-issues="${(post.missing || []).join(',')}" data-has-issues="${(post.missing || []).length > 0 ? 1 : 0}">
       <td>
-        <div class="uam-audit-post-title">
+        <div class="tabaix-seo-audit-post-title">
           <span class="title">${UAM.escHtml(post.post_title)}</span>
           <span class="type-badge">${UAM.escHtml(post.post_type)}</span>
         </div>
@@ -1114,11 +1114,11 @@
       <td>${renderStatusIcon(post.has_meta_desc)}</td>
       <td>${renderStatusIcon(post.has_focus_kw)}</td>
       <td>${renderStatusIcon(post.has_featured_img)}</td>
-      <td><span class="uam-audit-score ${scoreClass(score)}">${score}</span></td>
+      <td><span class="tabaix-seo-audit-score ${scoreClass(score)}">${score}</span></td>
       <td>
-        <div class="uam-audit-actions">
-          <button class="uam-btn-audit uam-btn-audit-view" onclick="window._uamViewAudit(${post.ID})">🔍 Audit</button>
-          <button class="uam-btn-audit uam-btn-audit-fix" onclick="window._uamOptimize(${post.ID}, this)">✨ AI Fix</button>
+        <div class="tabaix-seo-audit-actions">
+          <button class="tabaix-seo-btn-audit tabaix-seo-btn-audit-view" onclick="window._uamViewAudit(${post.ID})">🔍 Audit</button>
+          <button class="tabaix-seo-btn-audit tabaix-seo-btn-audit-fix" onclick="window._uamOptimize(${post.ID}, this)">✨ AI Fix</button>
         </div>
       </td>
     </tr>`;
@@ -1127,7 +1127,7 @@
   function renderLoadingRows(count) {
     let html = '';
     for (let i = 0; i < count; i++) {
-      html += `<tr class="uam-audit-loading"><td><span class="shimmer" style="width:${60 + Math.random() * 30}%"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:100px"></span></td></tr>`;
+      html += `<tr class="tabaix-seo-audit-loading"><td><span class="shimmer" style="width:${60 + Math.random() * 30}%"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:40px"></span></td><td><span class="shimmer" style="width:100px"></span></td></tr>`;
     }
     return html;
   }
@@ -1179,14 +1179,14 @@
     $status.text('Scanning...');
     $tbody.html(renderLoadingRows(6));
 
-    UAM.ajax('uam_scan_seo_audit', { post_type: postType }, function (d) {
+    UAM.ajax('tabaix_seo_scan_seo_audit', { post_type: postType }, function (d) {
       UAM.setLoading($btn, false);
       _auditPosts = d.posts || [];
       const stats = d.stats || {};
       updateStats(stats);
 
       if (_auditPosts.length === 0) {
-        $tbody.html('<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--uam-text3)">🎉 No published posts/pages found. Create some content first!</td></tr>');
+        $tbody.html('<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--tabaix-seo-text3)">🎉 No published posts/pages found. Create some content first!</td></tr>');
         $status.text('');
         return;
       }
@@ -1196,14 +1196,14 @@
       $tbody.html(html);
 
       const issueCount = _auditPosts.filter(p => (p.missing || []).length > 0).length;
-      $status.html(`<span style="color:var(--uam-green)">✓ Scanned ${_auditPosts.length} items</span> — <span style="color:${issueCount > 0 ? 'var(--uam-amber)' : 'var(--uam-green)'}">${issueCount} with issues</span>`);
+      $status.html(`<span style="color:var(--tabaix-seo-green)">✓ Scanned ${_auditPosts.length} items</span> — <span style="color:${issueCount > 0 ? 'var(--tabaix-seo-amber)' : 'var(--tabaix-seo-green)'}">${issueCount} with issues</span>`);
 
       // Apply current filter
       applyFilter($('#audit-filter-issues').val());
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.html(`<span style="color:var(--uam-red)">❌ ${UAM.escHtml(msg)}</span>`);
-      $tbody.html('<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--uam-red)">Failed to scan. Please try again.</td></tr>');
+      $status.html(`<span style="color:var(--tabaix-seo-red)">❌ ${UAM.escHtml(msg)}</span>`);
+      $tbody.html('<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--tabaix-seo-red)">Failed to scan. Please try again.</td></tr>');
     });
   });
 
@@ -1219,16 +1219,16 @@
     const $title = $('#audit-detail-title');
 
     $detail.show();
-    $content.html('<div class="uam-placeholder">🔍 Loading audit details...</div>');
+    $content.html('<div class="tabaix-seo-placeholder">🔍 Loading audit details...</div>');
     $title.text('Post SEO Audit');
 
     $('html, body').animate({ scrollTop: $detail.offset().top - 80 }, 300);
 
-    UAM.ajax('uam_get_post_audit', { post_id: postId }, function (d) {
+    UAM.ajax('tabaix_seo_get_post_audit', { post_id: postId }, function (d) {
       $title.text(`SEO Audit: ${d.title || 'Post #' + postId}`);
 
       const checks = d.checks || {};
-      let checksHtml = '<div class="uam-audit-checks">';
+      let checksHtml = '<div class="tabaix-seo-audit-checks">';
 
       const checkItems = [
         { key: 'has_seo_title', label: 'SEO Title', pass: checks.has_seo_title, detail: d.seo_title || 'Not set' },
@@ -1244,11 +1244,11 @@
       checkItems.forEach(item => {
         const icon = item.pass ? '✅' : '❌';
         checksHtml += `
-          <div class="uam-audit-check-item">
-            <span class="uam-audit-check-icon">${icon}</span>
+          <div class="tabaix-seo-audit-check-item">
+            <span class="tabaix-seo-audit-check-icon">${icon}</span>
             <div>
-              <div class="uam-audit-check-label">${item.label}</div>
-              <div class="uam-audit-check-value">${UAM.escHtml(item.detail)}</div>
+              <div class="tabaix-seo-audit-check-label">${item.label}</div>
+              <div class="tabaix-seo-audit-check-value">${UAM.escHtml(item.detail)}</div>
             </div>
           </div>`;
       });
@@ -1257,28 +1257,28 @@
       // Score
       const score = d.seo_score || 0;
       let scoreHtml = `
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:16px;background:rgba(99,102,241,.06);border-radius:var(--uam-radius-sm);border:1px solid var(--uam-border2)">
-          <span class="uam-audit-score ${scoreClass(score)}" style="width:56px;height:56px;font-size:18px">${score}</span>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:16px;background:rgba(99,102,241,.06);border-radius:var(--tabaix-seo-radius-sm);border:1px solid var(--tabaix-seo-border2)">
+          <span class="tabaix-seo-audit-score ${scoreClass(score)}" style="width:56px;height:56px;font-size:18px">${score}</span>
           <div>
-            <strong style="font-size:15px;color:var(--uam-text)">Overall SEO Score</strong>
-            <div style="font-size:12px;color:var(--uam-text2);margin-top:2px">${score >= 75 ? 'Great! Your SEO is well-optimized.' : score >= 40 ? 'Needs improvement. Address the issues below.' : 'Critical: Many SEO elements are missing.'}</div>
+            <strong style="font-size:15px;color:var(--tabaix-seo-text)">Overall SEO Score</strong>
+            <div style="font-size:12px;color:var(--tabaix-seo-text2);margin-top:2px">${score >= 75 ? 'Great! Your SEO is well-optimized.' : score >= 40 ? 'Needs improvement. Address the issues below.' : 'Critical: Many SEO elements are missing.'}</div>
           </div>
-          <a href="${d.edit_url || '#'}" target="_blank" class="uam-btn uam-btn-ghost uam-btn-sm" style="margin-left:auto">✏️ Edit Post</a>
+          <a href="${d.edit_url || '#'}" target="_blank" class="tabaix-seo-btn tabaix-seo-btn-ghost tabaix-seo-btn-sm" style="margin-left:auto">✏️ Edit Post</a>
         </div>`;
 
       // Images missing alt
       let imagesHtml = '';
       if (d.images_missing_alt && d.images_missing_alt.length > 0) {
         imagesHtml = `
-          <div class="uam-audit-images-list">
-            <h4 style="font-size:13px;font-weight:700;color:var(--uam-text);margin:0 0 10px">🖼️ Images Missing Alt Text (${d.images_missing_alt.length})</h4>`;
+          <div class="tabaix-seo-audit-images-list">
+            <h4 style="font-size:13px;font-weight:700;color:var(--tabaix-seo-text);margin:0 0 10px">🖼️ Images Missing Alt Text (${d.images_missing_alt.length})</h4>`;
         d.images_missing_alt.forEach(img => {
           imagesHtml += `
-            <div class="uam-audit-img-item">
-              ${img.src ? `<img class="uam-audit-img-thumb" src="${img.src}" alt="">` : ''}
-              <div class="uam-audit-img-info">
-                <div class="uam-audit-img-name">${UAM.escHtml(img.filename || 'Unknown image')}</div>
-                <div class="uam-audit-img-status">⚠ No alt text</div>
+            <div class="tabaix-seo-audit-img-item">
+              ${img.src ? `<img class="tabaix-seo-audit-img-thumb" src="${img.src}" alt="">` : ''}
+              <div class="tabaix-seo-audit-img-info">
+                <div class="tabaix-seo-audit-img-name">${UAM.escHtml(img.filename || 'Unknown image')}</div>
+                <div class="tabaix-seo-audit-img-status">⚠ No alt text</div>
               </div>
             </div>`;
         });
@@ -1288,7 +1288,7 @@
       // Recommendations
       let recsHtml = '';
       if (d.recommendations && d.recommendations.length > 0) {
-        recsHtml = '<div style="margin-top:16px"><h4 style="font-size:13px;font-weight:700;color:var(--uam-text);margin:0 0 10px">💡 Recommendations</h4><ul style="padding-left:20px;color:var(--uam-text2);font-size:12px;line-height:1.8">';
+        recsHtml = '<div style="margin-top:16px"><h4 style="font-size:13px;font-weight:700;color:var(--tabaix-seo-text);margin:0 0 10px">💡 Recommendations</h4><ul style="padding-left:20px;color:var(--tabaix-seo-text2);font-size:12px;line-height:1.8">';
         d.recommendations.forEach(r => {
           recsHtml += `<li>${UAM.escHtml(r)}</li>`;
         });
@@ -1297,7 +1297,7 @@
 
       $content.html(scoreHtml + checksHtml + imagesHtml + recsHtml);
     }, function (msg) {
-      $content.html(`<div style="color:var(--uam-red);padding:20px;text-align:center">❌ ${UAM.escHtml(msg)}</div>`);
+      $content.html(`<div style="color:var(--tabaix-seo-red);padding:20px;text-align:center">❌ ${UAM.escHtml(msg)}</div>`);
     });
   };
 
@@ -1307,8 +1307,8 @@
     const origText = $btn.html();
     $btn.html('⏳ Optimizing...').prop('disabled', true);
 
-    UAM.ajax('uam_optimize_post_seo', { post_id: postId }, function (d) {
-      $btn.html('✅ Done!').css('color', 'var(--uam-green)');
+    UAM.ajax('tabaix_seo_optimize_post_seo', { post_id: postId }, function (d) {
+      $btn.html('✅ Done!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => {
         $btn.html(origText).prop('disabled', false).css('color', '');
       }, 2000);
@@ -1329,10 +1329,10 @@
       if (d.alt_texts_generated > 0) summary.push(`✅ ${d.alt_texts_generated} image alt text(s) generated`);
       if (summary.length === 0) summary.push('ℹ️ All SEO data was already set');
 
-      $('#audit-scan-status').html(`<span style="color:var(--uam-green)">${summary.join(' | ')}</span>`);
+      $('#audit-scan-status').html(`<span style="color:var(--tabaix-seo-green)">${summary.join(' | ')}</span>`);
     }, function (msg) {
       $btn.html(origText).prop('disabled', false);
-      $('#audit-scan-status').html(`<span style="color:var(--uam-red)">❌ Optimization failed: ${UAM.escHtml(msg)}</span>`);
+      $('#audit-scan-status').html(`<span style="color:var(--tabaix-seo-red)">❌ Optimization failed: ${UAM.escHtml(msg)}</span>`);
     });
   };
 
@@ -1349,7 +1349,7 @@
     const $btn = $('#btn-save-chatbot');
     const $status = $('#chatbot-save-status');
     UAM.setLoading($btn, true);
-    $status.text('Saving…').css('color', 'var(--uam-text2)');
+    $status.text('Saving…').css('color', 'var(--tabaix-seo-text2)');
 
     const data = {
       chatbot_enabled: $(this).find('[name="chatbot_enabled"]').is(':checked') ? 1 : 0,
@@ -1357,13 +1357,13 @@
       chatbot_position: $(this).find('[name="chatbot_position"]').val(),
     };
 
-    UAM.ajax('uam_save_chatbot_settings', data, function (res) {
+    UAM.ajax('tabaix_seo_save_chatbot_settings', data, function (res) {
       UAM.setLoading($btn, false);
-      $status.text('✅ ' + (res.message || 'Saved!')).css('color', 'var(--uam-green)');
+      $status.text('✅ ' + (res.message || 'Saved!')).css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
     });
   });
 
@@ -1372,18 +1372,18 @@
   // ════════════════════════════════════════════════════════
 
   // ── Tab Navigation ──────────────────────────────────────
-  $(document).on('click', '.uam-tabs-nav .uam-tab', function () {
+  $(document).on('click', '.tabaix-seo-tabs-nav .tabaix-seo-tab', function () {
     const tab = $(this).data('tab');
-    $(this).addClass('active').siblings('.uam-tab').removeClass('active');
-    const $panes = $(this).closest('.uam-wrap').find('.uam-tab-pane');
+    $(this).addClass('active').siblings('.tabaix-seo-tab').removeClass('active');
+    const $panes = $(this).closest('.tabaix-seo-wrap').find('.tabaix-seo-tab-pane');
     $panes.removeClass('active');
     $panes.filter('#tab-' + tab).addClass('active');
   });
 
   // ── Link Type Toggle (radio buttons) ───────────────────
   $(document).on('change', 'input[name="il_link_type"]', function () {
-    $(this).closest('.uam-provider-toggle').find('.uam-provider-opt').removeClass('active');
-    $(this).closest('.uam-provider-opt').addClass('active');
+    $(this).closest('.tabaix-seo-provider-toggle').find('.tabaix-seo-provider-opt').removeClass('active');
+    $(this).closest('.tabaix-seo-provider-opt').addClass('active');
   });
 
   // ── Enable buttons when post selected ──────────────────
@@ -1408,7 +1408,7 @@
     frame.on('select', function () {
       const attachment = frame.state().get('selection').first().toJSON();
       $('#alt-attachment-id').val(attachment.id);
-      $('#alt-preview-area').html(`<img src="${attachment.url}" style="max-width:100%;max-height:180px;border-radius:10px;border:1px solid var(--uam-border)">`);
+      $('#alt-preview-area').html(`<img src="${attachment.url}" style="max-width:100%;max-height:180px;border-radius:10px;border:1px solid var(--tabaix-seo-border)">`);
       $('#alt-current-val').text(attachment.alt || '(No alt text currently)');
     });
     frame.open();
@@ -1420,16 +1420,16 @@
 
     const $btn = $(this), $out = $('#alt-status-area');
     UAM.setLoading($btn, true);
-    $out.html('<div class="uam-loader"><div class="uam-spinner"></div> Analyzing image…</div>');
+    $out.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Analyzing image…</div>');
 
-    UAM.ajax('uam_generate_alt_text', { attachment_id: attach_id }, function (d) {
+    UAM.ajax('tabaix_seo_generate_alt_text', { attachment_id: attach_id }, function (d) {
       UAM.setLoading($btn, false);
       $out.html(`
-        <div class="uam-alt-result">
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--uam-text2)">AI Generated Alt Text</label>
-          <textarea id="alt-edit-field" class="uam-textarea" style="margin-top:8px;font-size:13px">${UAM.escHtml(d.alt_text)}</textarea>
+        <div class="tabaix-seo-alt-result">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--tabaix-seo-text2)">AI Generated Alt Text</label>
+          <textarea id="alt-edit-field" class="tabaix-seo-textarea" style="margin-top:8px;font-size:13px">${UAM.escHtml(d.alt_text)}</textarea>
           <input type="hidden" id="alt-edit-id" value="${attach_id}">
-          <button class="uam-btn uam-btn-primary uam-btn-sm" id="btn-save-alt" style="margin-top:10px;width:100%">💾 Save to Image</button>
+          <button class="tabaix-seo-btn tabaix-seo-btn-primary tabaix-seo-btn-sm" id="btn-save-alt" style="margin-top:10px;width:100%">💾 Save to Image</button>
         </div>
       `);
     }, function (msg) {
@@ -1447,11 +1447,11 @@
     const $btn = $(this);
     const $status = $('#il-scan-status');
     UAM.setLoading($btn, true);
-    $status.text('Scanning posts…').css('color', 'var(--uam-text2)');
+    $status.text('Scanning posts…').css('color', 'var(--tabaix-seo-text2)');
 
-    UAM.ajax('uam_scan_links', {}, function (data) {
+    UAM.ajax('tabaix_seo_scan_links', {}, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ Scan complete!').css('color', 'var(--uam-green)');
+      $status.text('✅ Scan complete!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
 
       const s = data.stats;
@@ -1499,7 +1499,7 @@
       }
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
     });
   });
 
@@ -1513,16 +1513,16 @@
     const linkType = $('input[name="il_link_type"]:checked').val() || 'all';
 
     UAM.setLoading($btn, true);
-    $status.text('🧠 AI is analyzing your content…').css('color', 'var(--uam-text2)');
-    $results.html('<div class="uam-loader"><div class="uam-spinner"></div> Generating suggestions…</div>');
+    $status.text('🧠 AI is analyzing your content…').css('color', 'var(--tabaix-seo-text2)');
+    $results.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Generating suggestions…</div>');
 
-    UAM.ajax('uam_ai_suggest_links', { post_id: postId, link_type: linkType }, function (data) {
+    UAM.ajax('tabaix_seo_ai_suggest_links', { post_id: postId, link_type: linkType }, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ Done!').css('color', 'var(--uam-green)');
+      $status.text('✅ Done!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
 
       if (!data.suggestions || data.suggestions.length === 0) {
-        $results.html('<div class="uam-placeholder">No suggestions found for this post with the selected link type.</div>');
+        $results.html('<div class="tabaix-seo-placeholder">No suggestions found for this post with the selected link type.</div>');
         return;
       }
 
@@ -1530,15 +1530,15 @@
       data.suggestions.forEach(function (s) {
         const type = s.type || 'internal';
         const typeBadge = `<span class="il-suggestion-type ${type}">${type === 'external' ? '🌍 External' : '🏠 Internal'}</span>`;
-        const nofollowTag = s.nofollow ? ' <span style="font-size:10px;color:var(--uam-amber)">[nofollow]</span>' : '';
-        const newTabTag = s.new_tab ? ' <span style="font-size:10px;color:var(--uam-text3)">[↗ new tab]</span>' : '';
+        const nofollowTag = s.nofollow ? ' <span style="font-size:10px;color:var(--tabaix-seo-amber)">[nofollow]</span>' : '';
+        const newTabTag = s.new_tab ? ' <span style="font-size:10px;color:var(--tabaix-seo-text3)">[↗ new tab]</span>' : '';
 
         html += `<div class="il-suggestion-card">
           <div class="il-suggestion-anchor">"${UAM.escHtml(s.anchor_text)}" ${typeBadge}</div>
           <div class="il-suggestion-target">→ <strong>${UAM.escHtml(s.target_title || s.target_url || 'Post #' + (s.target_post_id || ''))}</strong>${nofollowTag}${newTabTag}</div>
           <div class="il-suggestion-reason">${UAM.escHtml(s.reason || '')}</div>
           <div class="il-suggestion-actions">
-            <button class="uam-btn uam-btn-primary uam-btn-sm btn-insert-link"
+            <button class="tabaix-seo-btn tabaix-seo-btn-primary tabaix-seo-btn-sm btn-insert-link"
               data-post-id="${postId}"
               data-anchor="${UAM.escHtml(s.anchor_text)}"
               data-url="${UAM.escHtml(s.target_url || '')}"
@@ -1552,7 +1552,7 @@
       $results.html(html);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
       $results.html('');
     });
   });
@@ -1568,16 +1568,16 @@
 
     $btn.text('Inserting…').prop('disabled', true);
 
-    UAM.ajax('uam_insert_link', {
+    UAM.ajax('tabaix_seo_insert_link', {
       post_id: postId,
       anchor: anchor,
       target_url: url,
       nofollow: nofollow,
       new_tab: new_tab
     }, function () {
-      $btn.text('✅ Inserted!').addClass('uam-btn-success').prop('disabled', true);
+      $btn.text('✅ Inserted!').addClass('tabaix-seo-btn-success').prop('disabled', true);
     }, function (msg) {
-      $btn.text('❌ ' + msg).css('color', 'var(--uam-red)').prop('disabled', true);
+      $btn.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)').prop('disabled', true);
     });
   });
 
@@ -1590,27 +1590,27 @@
     const $results = $('#kw-results');
 
     UAM.setLoading($btn, true);
-    $status.text('🔑 Extracting keywords…').css('color', 'var(--uam-text2)');
-    $results.html('<div class="uam-loader"><div class="uam-spinner"></div> Analyzing content…</div>');
+    $status.text('🔑 Extracting keywords…').css('color', 'var(--tabaix-seo-text2)');
+    $results.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Analyzing content…</div>');
 
-    UAM.ajax('uam_extract_keywords', { post_id: postId }, function (data) {
+    UAM.ajax('tabaix_seo_extract_keywords', { post_id: postId }, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ Done!').css('color', 'var(--uam-green)');
+      $status.text('✅ Done!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
 
       const keywords = data.keywords || [];
       if (!keywords.length) {
-        $results.html('<div class="uam-placeholder">No keywords extracted. Try a post with more content.</div>');
+        $results.html('<div class="tabaix-seo-placeholder">No keywords extracted. Try a post with more content.</div>');
         return;
       }
 
-      let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--uam-text2);font-weight:600">${keywords.length} keywords found</div>`;
+      let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--tabaix-seo-text2);font-weight:600">${keywords.length} keywords found</div>`;
       keywords.forEach(function (kw) {
         const typeClass = (kw.type || 'short-tail').replace(/\s+/g, '-').toLowerCase();
         const linkClass = (kw.link_type || 'internal').toLowerCase();
         const volume = kw.search_volume || 'N/A';
 
-        html += `<div class="uam-kw-card">
+        html += `<div class="tabaix-seo-kw-card">
           <span class="kw-name">${UAM.escHtml(kw.keyword)}</span>
           <div class="kw-meta">
             <span class="kw-tag ${typeClass}">${UAM.escHtml(kw.type || 'keyword')}</span>
@@ -1622,7 +1622,7 @@
       $results.html(html);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
       $results.html('');
     });
   });
@@ -1637,12 +1637,12 @@
     const $summary = $('#bl-summary');
 
     UAM.setLoading($btn, true);
-    $status.text('🩺 Checking links…').css('color', 'var(--uam-text2)');
-    $results.html('<div class="uam-loader"><div class="uam-spinner"></div> Checking each link — this may take a moment…</div>');
+    $status.text('🩺 Checking links…').css('color', 'var(--tabaix-seo-text2)');
+    $results.html('<div class="tabaix-seo-loader"><div class="tabaix-seo-spinner"></div> Checking each link — this may take a moment…</div>');
 
-    UAM.ajax('uam_check_broken_links', { post_id: postId }, function (data) {
+    UAM.ajax('tabaix_seo_check_broken_links', { post_id: postId }, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ Check complete!').css('color', 'var(--uam-green)');
+      $status.text('✅ Check complete!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
 
       const links = data.links || [];
@@ -1661,7 +1661,7 @@
       $summary.slideDown(200);
 
       if (!links.length) {
-        $results.html('<div class="uam-placeholder">No links found in this post.</div>');
+        $results.html('<div class="tabaix-seo-placeholder">No links found in this post.</div>');
         return;
       }
 
@@ -1673,7 +1673,7 @@
         html += `<div class="bl-item" data-url="${UAM.escHtml(l.url)}">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <span class="bl-status-badge ${st}">${statusIcon[st] || '?'} ${st.toUpperCase()}${code}</span>
-            <span style="font-size:10px;color:var(--uam-text3)">${l.type || ''}</span>
+            <span style="font-size:10px;color:var(--tabaix-seo-text3)">${l.type || ''}</span>
           </div>
           <div class="bl-item-url"><a href="${UAM.escHtml(l.url)}" target="_blank">${UAM.escHtml(l.url)}</a></div>
           <div class="bl-item-anchor">Anchor: "${UAM.escHtml(l.anchor_text || 'N/A')}"</div>`;
@@ -1681,11 +1681,11 @@
         // Show fix actions only for broken/redirect links
         if (st === 'broken' || st === 'redirect' || st === 'error') {
           html += `<div class="bl-item-actions">
-            <button class="uam-btn uam-btn-sm uam-btn-ghost bl-fix-btn" data-post-id="${postId}"
+            <button class="tabaix-seo-btn tabaix-seo-btn-sm tabaix-seo-btn-ghost bl-fix-btn" data-post-id="${postId}"
               data-url="${UAM.escHtml(l.url)}" data-action="nofollow" title="Add nofollow to this link">🔒 Nofollow</button>
-            <button class="uam-btn uam-btn-sm uam-btn-ghost bl-fix-btn" data-post-id="${postId}"
+            <button class="tabaix-seo-btn tabaix-seo-btn-sm tabaix-seo-btn-ghost bl-fix-btn" data-post-id="${postId}"
               data-url="${UAM.escHtml(l.url)}" data-action="remove" title="Remove this link">🗑️ Remove</button>
-            <button class="uam-btn uam-btn-sm uam-btn-secondary bl-replace-btn" data-post-id="${postId}"
+            <button class="tabaix-seo-btn tabaix-seo-btn-sm tabaix-seo-btn-secondary bl-replace-btn" data-post-id="${postId}"
               data-url="${UAM.escHtml(l.url)}" title="Replace with new URL">🔄 Replace</button>
           </div>`;
         }
@@ -1694,7 +1694,7 @@
       $results.html(html);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
       $results.html('');
     });
   });
@@ -1708,13 +1708,13 @@
 
     $btn.text('Fixing…').prop('disabled', true);
 
-    UAM.ajax('uam_fix_link', { post_id: postId, url: url, action: action }, function () {
-      $btn.text('✅ Done!').css('color', 'var(--uam-green)');
+    UAM.ajax('tabaix_seo_fix_link', { post_id: postId, url: url, action: action }, function () {
+      $btn.text('✅ Done!').css('color', 'var(--tabaix-seo-green)');
       if (action === 'remove') {
         $btn.closest('.bl-item').fadeOut(300, function () { $(this).remove(); });
       }
     }, function (msg) {
-      $btn.text('❌ Failed').css('color', 'var(--uam-red)');
+      $btn.text('❌ Failed').css('color', 'var(--tabaix-seo-red)');
       setTimeout(() => {
         $btn.text(action === 'nofollow' ? '🔒 Nofollow' : '🗑️ Remove').css('color', '').prop('disabled', false);
       }, 2000);
@@ -1731,12 +1731,12 @@
 
     $btn.text('Replacing…').prop('disabled', true);
 
-    UAM.ajax('uam_fix_link', { post_id: postId, url: oldUrl, action: 'replace', new_url: newUrl }, function () {
-      $btn.text('✅ Replaced!').css('color', 'var(--uam-green)');
+    UAM.ajax('tabaix_seo_fix_link', { post_id: postId, url: oldUrl, action: 'replace', new_url: newUrl }, function () {
+      $btn.text('✅ Replaced!').css('color', 'var(--tabaix-seo-green)');
       $btn.closest('.bl-item').find('.bl-item-url a').text(newUrl).attr('href', newUrl);
       $btn.closest('.bl-item').find('.bl-status-badge').removeClass('broken redirect error').addClass('ok').html('✅ OK');
     }, function (msg) {
-      $btn.text('❌ Failed').css('color', 'var(--uam-red)');
+      $btn.text('❌ Failed').css('color', 'var(--tabaix-seo-red)');
       setTimeout(() => $btn.text('🔄 Replace').css('color', '').prop('disabled', false), 2000);
     });
   });
@@ -1749,14 +1749,14 @@
     const url = $('#ml-url').val().trim();
 
     if (!keyword || !url) {
-      $status.text('❌ Keyword and URL are required.').css('color', 'var(--uam-red)');
+      $status.text('❌ Keyword and URL are required.').css('color', 'var(--tabaix-seo-red)');
       return;
     }
 
     UAM.setLoading($btn, true);
-    $status.text('Saving…').css('color', 'var(--uam-text2)');
+    $status.text('Saving…').css('color', 'var(--tabaix-seo-text2)');
 
-    UAM.ajax('uam_save_manual_link', {
+    UAM.ajax('tabaix_seo_save_manual_link', {
       keyword: keyword,
       url: url,
       title: $('#ml-title').val().trim(),
@@ -1766,7 +1766,7 @@
       new_tab: $('#ml-newtab').is(':checked') ? 1 : 0,
     }, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ Rule saved!').css('color', 'var(--uam-green)');
+      $status.text('✅ Rule saved!').css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
 
       // Clear form
@@ -1778,32 +1778,32 @@
       // Reload the list (add the new item to the top)
       const link = data.link || {};
       const type = link.type || 'internal';
-      const newItem = `<div class="uam-link-rule-item" data-id="${link.id || ''}">
+      const newItem = `<div class="tabaix-seo-link-rule-item" data-id="${link.id || ''}">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span class="uam-badge ${type === 'external' ? 'uam-badge-spam' : 'uam-badge-approve'}" style="font-size:10px;">${type === 'external' ? '🌍 External' : '🏠 Internal'}</span>
-          ${link.nofollow ? '<span class="uam-badge uam-badge-pending" style="font-size:10px;">nofollow</span>' : ''}
+          <span class="tabaix-seo-badge ${type === 'external' ? 'tabaix-seo-badge-spam' : 'tabaix-seo-badge-approve'}" style="font-size:10px;">${type === 'external' ? '🌍 External' : '🏠 Internal'}</span>
+          ${link.nofollow ? '<span class="tabaix-seo-badge tabaix-seo-badge-pending" style="font-size:10px;">nofollow</span>' : ''}
           <span style="color:#10b981;font-size:10px;font-weight:700;">● Active</span>
         </div>
         <div style="margin-bottom:4px;">
-          <strong style="color:var(--uam-accent);">"${UAM.escHtml(link.keyword || keyword)}"</strong>
-          <span style="color:var(--uam-text2);margin:0 6px;">→</span>
+          <strong style="color:var(--tabaix-seo-accent);">"${UAM.escHtml(link.keyword || keyword)}"</strong>
+          <span style="color:var(--tabaix-seo-text2);margin:0 6px;">→</span>
           <a href="${UAM.escHtml(link.url || url)}" target="_blank" style="font-size:12px;word-break:break-all;">${UAM.escHtml(link.url || url)}</a>
         </div>
         <div style="display:flex;gap:6px;margin-top:6px;">
-          <button class="uam-btn uam-btn-sm uam-btn-ghost ml-delete-btn" data-id="${link.id || ''}">🗑️ Delete</button>
+          <button class="tabaix-seo-btn tabaix-seo-btn-sm tabaix-seo-btn-ghost ml-delete-btn" data-id="${link.id || ''}">🗑️ Delete</button>
         </div>
       </div>`;
 
       const $list = $('#ml-list');
-      $list.find('.uam-placeholder').remove();
+      $list.find('.tabaix-seo-placeholder').remove();
       $list.prepend(newItem);
 
       // Update count
-      const count = $list.find('.uam-link-rule-item').length;
+      const count = $list.find('.tabaix-seo-link-rule-item').length;
       $('#ml-count').text(count);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
     });
   });
 
@@ -1815,13 +1815,13 @@
 
     $btn.text('Deleting…').prop('disabled', true);
 
-    UAM.ajax('uam_delete_manual_link', { link_id: id }, function () {
-      $btn.closest('.uam-link-rule-item').fadeOut(300, function () {
+    UAM.ajax('tabaix_seo_delete_manual_link', { link_id: id }, function () {
+      $btn.closest('.tabaix-seo-link-rule-item').fadeOut(300, function () {
         $(this).remove();
-        const count = $('#ml-list .uam-link-rule-item').length;
+        const count = $('#ml-list .tabaix-seo-link-rule-item').length;
         $('#ml-count').text(count);
         if (count === 0) {
-          $('#ml-list').html('<div class="uam-placeholder">No manual link rules yet. Add one from the left panel.</div>');
+          $('#ml-list').html('<div class="tabaix-seo-placeholder">No manual link rules yet. Add one from the left panel.</div>');
         }
       });
     }, function (msg) {
@@ -1834,9 +1834,9 @@
   $(document).on('click', '#btn-add-rule', function () {
     const idx = $('#il-rules-container .il-rule-row').length;
     const html = `<div class="il-rule-row" data-index="${idx}">
-      <input type="text" class="il-rule-keyword uam-input" placeholder="Keyword" value="" style="flex:1;">
-      <input type="url" class="il-rule-url uam-input" placeholder="https://your-site.com/page" value="" style="flex:1.5;">
-      <select class="il-rule-type uam-select" style="width:100px;">
+      <input type="text" class="il-rule-keyword tabaix-seo-input" placeholder="Keyword" value="" style="flex:1;">
+      <input type="url" class="il-rule-url tabaix-seo-input" placeholder="https://your-site.com/page" value="" style="flex:1.5;">
+      <select class="il-rule-type tabaix-seo-select" style="width:100px;">
         <option value="internal">🏠 Internal</option>
         <option value="external">🌍 External</option>
       </select>
@@ -1847,7 +1847,7 @@
       <label title="New tab" style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;">
         <input type="checkbox" class="il-rule-newtab"> ↗
       </label>
-      <button type="button" class="uam-btn uam-btn-sm il-rule-remove" title="Remove">✕</button>
+      <button type="button" class="tabaix-seo-btn tabaix-seo-btn-sm il-rule-remove" title="Remove">✕</button>
     </div>`;
     $('#il-rules-container').append(html);
   });
@@ -1860,7 +1860,7 @@
     const $btn = $(this);
     const $status = $('#il-rules-status');
     UAM.setLoading($btn, true);
-    $status.text('Saving…').css('color', 'var(--uam-text2)');
+    $status.text('Saving…').css('color', 'var(--tabaix-seo-text2)');
 
     // Collect rules with new fields
     const rules = [];
@@ -1875,16 +1875,16 @@
       });
     });
 
-    UAM.ajax('uam_save_autolink_rules', {
+    UAM.ajax('tabaix_seo_save_autolink_rules', {
       rules: rules,
       autolink_enabled: $('#il-autolink-enabled').is(':checked') ? 1 : 0,
     }, function (data) {
       UAM.setLoading($btn, false);
-      $status.text('✅ ' + (data.message || 'Saved!')).css('color', 'var(--uam-green)');
+      $status.text('✅ ' + (data.message || 'Saved!')).css('color', 'var(--tabaix-seo-green)');
       setTimeout(() => $status.text(''), 3000);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
     });
   });
   // ════════════════════════════════════════════════════════
@@ -1901,11 +1901,11 @@
    */
   function generateImage(params, $btn, $preview, $actions, $status) {
     UAM.setLoading($btn, true);
-    $status.text('🎨 Generating image... this may take up to 60s').css('color', 'var(--uam-text2)');
-    $preview.html('<div class="uam-img-loading"><div class="uam-spinner"></div>Creating your image with AI...</div>');
+    $status.text('🎨 Generating image... this may take up to 60s').css('color', 'var(--tabaix-seo-text2)');
+    $preview.html('<div class="tabaix-seo-img-loading"><div class="tabaix-seo-spinner"></div>Creating your image with AI...</div>');
     $actions.hide();
 
-    UAM.ajax('uam_generate_image', {
+    UAM.ajax('tabaix_seo_generate_image', {
       post_title: params.title || '',
       post_excerpt: params.excerpt || '',
       style: params.style || 'photorealistic',
@@ -1916,12 +1916,12 @@
       UAM.setLoading($btn, false);
       const url = data.image_url || '';
       if (!url) {
-        $status.text('⚠️ No image returned').css('color', 'var(--uam-amber)');
-        $preview.html('<div class="uam-placeholder">No image was returned. Try again.</div>');
+        $status.text('⚠️ No image returned').css('color', 'var(--tabaix-seo-amber)');
+        $preview.html('<div class="tabaix-seo-placeholder">No image was returned. Try again.</div>');
         return;
       }
 
-      $status.text('✅ Image generated!' + (data.attach_id ? ' (saved to Media Library, ID: ' + data.attach_id + ')' : '')).css('color', 'var(--uam-green)');
+      $status.text('✅ Image generated!' + (data.attach_id ? ' (saved to Media Library, ID: ' + data.attach_id + ')' : '')).css('color', 'var(--tabaix-seo-green)');
       $preview.html('<img src="' + url + '" alt="AI Generated Image">');
       $actions.show();
 
@@ -1932,8 +1932,8 @@
       setTimeout(function () { $status.text(''); }, 8000);
     }, function (msg) {
       UAM.setLoading($btn, false);
-      $status.text('❌ ' + msg).css('color', 'var(--uam-red)');
-      $preview.html('<div class="uam-placeholder">Image generation failed. Please try again.</div>');
+      $status.text('❌ ' + msg).css('color', 'var(--tabaix-seo-red)');
+      $preview.html('<div class="tabaix-seo-placeholder">Image generation failed. Please try again.</div>');
     });
   }
 
@@ -1942,7 +1942,7 @@
     const $btn = $(this);
     const title = $('#img-title').val().trim();
     if (!title) {
-      $('#image-preview-area').html('<div class="uam-notice uam-notice-error">Please enter a title first.</div>');
+      $('#image-preview-area').html('<div class="tabaix-seo-notice tabaix-seo-notice-error">Please enter a title first.</div>');
       return;
     }
     generateImage({
@@ -1981,7 +1981,7 @@
     // If no custom prompt, build from topic
     if (!prompt) {
       if (!topic) {
-        $('#bp-img-status').text('⚠️ Enter a prompt or a post title first.').css('color', 'var(--uam-amber)');
+        $('#bp-img-status').text('⚠️ Enter a prompt or a post title first.').css('color', 'var(--tabaix-seo-amber)');
         return;
       }
       prompt = topic;
@@ -2001,14 +2001,14 @@
   $(document).on('click', '#btn-bp-auto-prompt', function () {
     const topic = $('#bp-topic').val().trim();
     if (!topic) {
-      $('#bp-img-status').text('⚠️ Enter a post title first.').css('color', 'var(--uam-amber)');
+      $('#bp-img-status').text('⚠️ Enter a post title first.').css('color', 'var(--tabaix-seo-amber)');
       setTimeout(function () { $('#bp-img-status').text(''); }, 3000);
       return;
     }
     const style = $('#bp-img-style').val();
     const prompt = 'A professional ' + style + ' image for a blog post titled: "' + topic + '". High quality, visually compelling, suitable as a featured image.';
     $('#bp-img-prompt').val(prompt);
-    $('#bp-img-status').text('✨ Prompt generated from title!').css('color', 'var(--uam-green)');
+    $('#bp-img-status').text('✨ Prompt generated from title!').css('color', 'var(--tabaix-seo-green)');
     setTimeout(function () { $('#bp-img-status').text(''); }, 3000);
   });
 
@@ -2052,7 +2052,7 @@
     document.documentElement.style.setProperty('--wp-admin-theme-color', '#6366f1');
 
     // Make all result areas scrollable
-    $('.uam-report-area, .uam-result-area').on('wheel', function (e) {
+    $('.tabaix-seo-report-area, .tabaix-seo-result-area').on('wheel', function (e) {
       e.stopPropagation();
     });
   });
@@ -2063,13 +2063,13 @@
   (function () {
     if (!(window.uamAdmin && window.uamAdmin.chatbotEnabled)) return;
 
-    const $panel  = $('#uam-admin-chatbot');
-    const $toggle = $('#uam-admin-chat-toggle');
-    const $close  = $('#uam-admin-chat-close');
-    const $msgs   = $('#uam-achat-messages');
-    const $input  = $('#uam-achat-input');
-    const $send   = $('#uam-achat-send');
-    const $typing = $('#uam-achat-typing');
+    const $panel  = $('#tabaix-seo-admin-chatbot');
+    const $toggle = $('#tabaix-seo-admin-chat-toggle');
+    const $close  = $('#tabaix-seo-admin-chat-close');
+    const $msgs   = $('#tabaix-seo-achat-messages');
+    const $input  = $('#tabaix-seo-achat-input');
+    const $send   = $('#tabaix-seo-achat-send');
+    const $typing = $('#tabaix-seo-achat-typing');
     const pageCtx = (window.uamAdmin && window.uamAdmin.currentPage) || 'admin panel';
 
     let isOpen = false;
@@ -2078,13 +2078,13 @@
     function openPanel() {
       $panel.show();
       isOpen = true;
-      $toggle.addClass('uam-admin-chat-btn--active');
+      $toggle.addClass('tabaix-seo-admin-chat-btn--active');
       $input.focus();
     }
     function closePanel() {
       $panel.hide();
       isOpen = false;
-      $toggle.removeClass('uam-admin-chat-btn--active');
+      $toggle.removeClass('tabaix-seo-admin-chat-btn--active');
     }
 
     $toggle.on('click', function () { isOpen ? closePanel() : openPanel(); });
@@ -2096,7 +2096,7 @@
     }
 
     function addMessage(text, role /* 'user'|'bot'|'error' */) {
-      const cls = role === 'user' ? 'uam-achat-user' : (role === 'error' ? 'uam-achat-error' : 'uam-achat-bot');
+      const cls = role === 'user' ? 'tabaix-seo-achat-user' : (role === 'error' ? 'tabaix-seo-achat-error' : 'tabaix-seo-achat-bot');
       const escaped = UAM.escHtml(text);
       // Convert simple markdown (bold, italic, code) in bot messages
       const rendered = role !== 'user'
@@ -2105,7 +2105,7 @@
             .replace(/`(.+?)`/g, '<code style="background:rgba(99,102,241,.18);padding:1px 5px;border-radius:4px;font-size:12px">$1</code>')
             .replace(/\n/g, '<br>')
         : escaped;
-      const $msg = $('<div class="uam-achat-msg ' + cls + '"><div class="uam-achat-bubble">' + rendered + '</div></div>');
+      const $msg = $('<div class="tabaix-seo-achat-msg ' + cls + '"><div class="tabaix-seo-achat-bubble">' + rendered + '</div></div>');
       $msgs.append($msg);
       scrollBottom();
     }
@@ -2118,7 +2118,7 @@
       addMessage(msg, 'user');
       $input.val('').css('height', 'auto');
 
-      $typing.removeClass('uam-hidden');
+      $typing.removeClass('tabaix-seo-hidden');
       $send.prop('disabled', true);
       scrollBottom();
 
@@ -2126,13 +2126,13 @@
         url: UAM.ajaxUrl,
         method: 'POST',
         data: {
-          action:  'uam_admin_chatbot',
+          action:  'tabaix_seo_admin_chatbot',
           nonce:   UAM.nonce,
           message: msg,
           context: pageCtx,
         },
         success: function (res) {
-          $typing.addClass('uam-hidden');
+          $typing.addClass('tabaix-seo-hidden');
           $send.prop('disabled', false);
           if (res.success && res.data && res.data.result) {
             addMessage(res.data.result, 'bot');
@@ -2142,7 +2142,7 @@
           }
         },
         error: function (xhr) {
-          $typing.addClass('uam-hidden');
+          $typing.addClass('tabaix-seo-hidden');
           $send.prop('disabled', false);
           addMessage('⚠️ Request failed: ' + (xhr.statusText || 'Network error'), 'error');
         },

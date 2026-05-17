@@ -103,10 +103,10 @@
 
     // ── Status helpers ────────────────────────────────────────────────────
     function setStatus(text, type) {
-        const $el = $('#uam-el-status');
+        const $el = $('#tabaix-seo-el-status');
         $el.removeClass('loading success error').addClass(type || '');
         if (type === 'loading') {
-            $el.html('<span class="uam-el-spinner"></span> ' + text);
+            $el.html('<span class="tabaix-seo-el-spinner"></span> ' + text);
         } else {
             $el.text(text);
         }
@@ -123,10 +123,10 @@
         }
 
         setStatus('AI is analyzing your content...', 'loading');
-        $('#uam-el-results').html('');
+        $('#tabaix-seo-el-results').html('');
 
         const data = {
-            action: 'uam_analyze_draft',
+            action: 'tabaix_seo_analyze_draft',
             nonce: nonce,
             post_id: postId,
             title: title,
@@ -162,15 +162,15 @@
         const stats = data.stats || {};
 
         // Update stats
-        $('#uam-el-internal-count').text(stats.internal_count || 0);
-        $('#uam-el-external-count').text(stats.external_count || 0);
-        $('#uam-el-word-count').text(stats.word_count || 0);
-        $('#uam-el-stats').slideDown(150);
+        $('#tabaix-seo-el-internal-count').text(stats.internal_count || 0);
+        $('#tabaix-seo-el-external-count').text(stats.external_count || 0);
+        $('#tabaix-seo-el-word-count').text(stats.word_count || 0);
+        $('#tabaix-seo-el-stats').slideDown(150);
 
         if (suggestions.length === 0) {
             setStatus('', '');
-            $('#uam-el-results').html(
-                '<div class="uam-el-empty">' +
+            $('#tabaix-seo-el-results').html(
+                '<div class="tabaix-seo-el-empty">' +
                 '<span class="dashicons dashicons-yes-alt"></span>' +
                 'Great! No additional link suggestions for this content.' +
                 '</div>'
@@ -183,33 +183,33 @@
         let html = '';
         suggestions.forEach(function (s, i) {
             const priority = (s.priority || 'medium').toLowerCase();
-            html += '<div class="uam-el-suggestion priority-' + priority + '">';
-            html += '<span class="uam-el-priority ' + priority + '">' + priority + '</span>';
-            html += '<span class="uam-el-anchor">"' + escHtml(s.anchor_text || '') + '"</span>';
-            html += '<div class="uam-el-target">→ <a href="' + escHtml(s.target_url || '#') + '" target="_blank">' + escHtml(s.target_title || 'Post #' + s.target_post_id) + '</a></div>';
+            html += '<div class="tabaix-seo-el-suggestion priority-' + priority + '">';
+            html += '<span class="tabaix-seo-el-priority ' + priority + '">' + priority + '</span>';
+            html += '<span class="tabaix-seo-el-anchor">"' + escHtml(s.anchor_text || '') + '"</span>';
+            html += '<div class="tabaix-seo-el-target">→ <a href="' + escHtml(s.target_url || '#') + '" target="_blank">' + escHtml(s.target_title || 'Post #' + s.target_post_id) + '</a></div>';
             if (s.reason) {
-                html += '<div class="uam-el-reason">' + escHtml(s.reason) + '</div>';
+                html += '<div class="tabaix-seo-el-reason">' + escHtml(s.reason) + '</div>';
             }
-            html += '<button type="button" class="uam-el-insert-btn" data-index="' + i + '" data-anchor="' + escHtml(s.anchor_text || '') + '" data-url="' + escHtml(s.target_url || '') + '">✅ Insert Link</button>';
+            html += '<button type="button" class="tabaix-seo-el-insert-btn" data-index="' + i + '" data-anchor="' + escHtml(s.anchor_text || '') + '" data-url="' + escHtml(s.target_url || '') + '">✅ Insert Link</button>';
             html += '</div>';
         });
 
-        html += '<div class="uam-el-tip"><strong>💡 Tip:</strong> Click "Insert Link" to add the link directly to your content. The link will be added to the first matching phrase.</div>';
+        html += '<div class="tabaix-seo-el-tip"><strong>💡 Tip:</strong> Click "Insert Link" to add the link directly to your content. The link will be added to the first matching phrase.</div>';
 
-        $('#uam-el-results').html(html);
+        $('#tabaix-seo-el-results').html(html);
     }
 
     // ── Event handlers ────────────────────────────────────────────────────
-    $(document).on('click', '#uam-el-scan', function () {
+    $(document).on('click', '#tabaix-seo-el-scan', function () {
         scanContent(false);
     });
 
-    $(document).on('click', '#uam-el-scan-draft', function () {
+    $(document).on('click', '#tabaix-seo-el-scan-draft', function () {
         scanContent(true);
     });
 
     // Insert link into editor
-    $(document).on('click', '.uam-el-insert-btn', function () {
+    $(document).on('click', '.tabaix-seo-el-insert-btn', function () {
         const $btn = $(this);
         if ($btn.hasClass('inserted') || $btn.hasClass('failed')) return;
 
@@ -232,7 +232,7 @@
                     url: ajaxUrl,
                     method: 'POST',
                     data: {
-                        action: 'uam_insert_link',
+                        action: 'tabaix_seo_insert_link',
                         nonce: nonce,
                         post_id: postId,
                         anchor: anchor,

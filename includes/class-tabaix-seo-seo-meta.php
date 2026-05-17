@@ -98,8 +98,8 @@ class TABAIX_SEO_SEO_Meta
     public function enqueue_scripts($hook)
     {
         if (!in_array($hook, ['post.php', 'post-new.php'])) return;
-        wp_enqueue_style('tabaix-seo-meta-style', plugins_url('../assets/css/uam-seo-meta.css', __FILE__), [], '1.0.0');
-        wp_enqueue_script('tabaix-seo-meta-script', plugins_url('../assets/js/uam-seo-meta.js', __FILE__), ['jquery'], '1.0.0', true);
+        wp_enqueue_style('tabaix-seo-meta-style', plugins_url('../assets/css/tabaix-seo-seo-meta.css', __FILE__), [], '1.0.0');
+        wp_enqueue_script('tabaix-seo-meta-script', plugins_url('../assets/js/tabaix-seo-seo-meta.js', __FILE__), ['jquery'], '1.0.0', true);
         global $post;
         wp_localize_script('tabaix-seo-meta-script', 'tabaixSeoMetaData', [
             'ajaxUrl'   => admin_url('admin-ajax.php'),
@@ -136,80 +136,80 @@ class TABAIX_SEO_SEO_Meta
         $seo_title_len = strlen($seo_title);
         $meta_desc_len = strlen($meta_desc);
         ?>
-        <div id="uam-seo-metabox-wrap">
+        <div id="tabaix-seo-seo-metabox-wrap">
 
-            <div class="uam-mb-tabs">
-                <div class="uam-mb-tab active" data-tab="meta">SEO Meta</div>
-                <div class="uam-mb-tab" data-tab="images">AI Images</div>
-                <div class="uam-mb-tab" data-tab="vision">Vision Analysis</div>
+            <div class="tabaix-seo-mb-tabs">
+                <div class="tabaix-seo-mb-tab active" data-tab="meta">SEO Meta</div>
+                <div class="tabaix-seo-mb-tab" data-tab="images">AI Images</div>
+                <div class="tabaix-seo-mb-tab" data-tab="vision">Vision Analysis</div>
             </div>
 
             <!-- Tab: SEO Meta -->
-            <div id="uam-tab-meta" class="uam-mb-content active">
-                <div class="uam-mb-row">
-                    <label class="uam-mb-label">Focus Keyword</label>
-                    <input type="text" id="tabaix_seo_focus_keyword" name="tabaix_seo_focus_keyword" class="uam-mb-input" value="<?php echo esc_attr($focus_kw); ?>">
+            <div id="tabaix-seo-tab-meta" class="tabaix-seo-mb-content active">
+                <div class="tabaix-seo-mb-row">
+                    <label class="tabaix-seo-mb-label">Focus Keyword</label>
+                    <input type="text" id="tabaix_seo_focus_keyword" name="tabaix_seo_focus_keyword" class="tabaix-seo-mb-input" value="<?php echo esc_attr($focus_kw); ?>">
                 </div>
-                <div class="uam-mb-row">
-                    <label class="uam-mb-label">SEO Title</label>
-                    <input type="text" id="tabaix_seo_title" name="tabaix_seo_title" class="uam-mb-input" value="<?php echo esc_attr($seo_title); ?>" maxlength="70">
+                <div class="tabaix-seo-mb-row">
+                    <label class="tabaix-seo-mb-label">SEO Title</label>
+                    <input type="text" id="tabaix_seo_title" name="tabaix_seo_title" class="tabaix-seo-mb-input" value="<?php echo esc_attr($seo_title); ?>" maxlength="70">
                 </div>
-                <div class="uam-mb-row">
-                    <label class="uam-mb-label">Meta Description</label>
-                    <textarea id="tabaix_seo_meta_description" name="tabaix_seo_meta_description" class="uam-mb-textarea" maxlength="165"><?php echo esc_textarea($meta_desc); ?></textarea>
+                <div class="tabaix-seo-mb-row">
+                    <label class="tabaix-seo-mb-label">Meta Description</label>
+                    <textarea id="tabaix_seo_meta_description" name="tabaix_seo_meta_description" class="tabaix-seo-mb-textarea" maxlength="165"><?php echo esc_textarea($meta_desc); ?></textarea>
                 </div>
-                <div class="uam-mb-actions">
-                    <button type="button" class="uam-mb-btn uam-mb-btn-primary" id="uam-btn-gen-meta">✦ Generate with AI</button>
-                    <button type="button" class="uam-mb-btn uam-mb-btn-secondary" id="uam-btn-preview-search">👁 Preview</button>
+                <div class="tabaix-seo-mb-actions">
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-primary" id="tabaix-seo-btn-gen-meta">✦ Generate with AI</button>
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-secondary" id="tabaix-seo-btn-preview-search">👁 Preview</button>
                 </div>
-                <div id="uam-meta-preview" class="uam-mb-preview">
-                    <div class="uam-mb-preview-title" id="uam-preview-title"></div>
-                    <div class="uam-mb-preview-desc" id="uam-preview-desc"></div>
+                <div id="tabaix-seo-meta-preview" class="tabaix-seo-mb-preview">
+                    <div class="tabaix-seo-mb-preview-title" id="tabaix-seo-preview-title"></div>
+                    <div class="tabaix-seo-mb-preview-desc" id="tabaix-seo-preview-desc"></div>
                 </div>
             </div>
 
             <!-- Tab: AI Images -->
-            <div id="uam-tab-images" class="uam-mb-content">
-                <div class="uam-mb-row">
-                    <label class="uam-mb-label">Image Prompt</label>
-                    <textarea id="uam-img-prompt" class="uam-mb-textarea" placeholder="Describe the image..."></textarea>
+            <div id="tabaix-seo-tab-images" class="tabaix-seo-mb-content">
+                <div class="tabaix-seo-mb-row">
+                    <label class="tabaix-seo-mb-label">Image Prompt</label>
+                    <textarea id="tabaix-seo-img-prompt" class="tabaix-seo-mb-textarea" placeholder="Describe the image..."></textarea>
                 </div>
-                <div class="uam-mb-row uam-mb-row-flex">
+                <div class="tabaix-seo-mb-row tabaix-seo-mb-row-flex">
                     <div class="flex-1">
-                        <label class="uam-mb-label">Style</label>
-                        <select id="uam-img-style" class="uam-mb-select">
+                        <label class="tabaix-seo-mb-label">Style</label>
+                        <select id="tabaix-seo-img-style" class="tabaix-seo-mb-select">
                             <option value="photorealistic">Photorealistic</option>
                             <option value="digital_art">Digital Art</option>
                             <option value="oil_painting">Oil Painting</option>
                         </select>
                     </div>
                 </div>
-                <div class="uam-mb-actions">
-                    <button type="button" class="uam-mb-btn uam-mb-btn-primary" id="uam-btn-gen-img">🎨 Generate Image</button>
+                <div class="tabaix-seo-mb-actions">
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-primary" id="tabaix-seo-btn-gen-img">🎨 Generate Image</button>
                 </div>
-                <div id="uam-img-preview-area" class="margin-top-15"></div>
-                <div id="uam-img-actions" class="display-none margin-top-10 gap-8">
-                    <button type="button" class="uam-mb-btn uam-mb-btn-primary" id="uam-btn-set-feat">⭐ Set as Featured</button>
+                <div id="tabaix-seo-img-preview-area" class="margin-top-15"></div>
+                <div id="tabaix-seo-img-actions" class="display-none margin-top-10 gap-8">
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-primary" id="tabaix-seo-btn-set-feat">⭐ Set as Featured</button>
                 </div>
             </div>
 
             <!-- Tab: Vision Analysis -->
-            <div id="uam-tab-vision" class="uam-mb-content">
+            <div id="tabaix-seo-tab-vision" class="tabaix-seo-mb-content">
                 <p class="vision-desc">Analyze existing images to generate titles and alt text.</p>
-                <div class="uam-mb-row">
-                    <label class="uam-mb-label">Select Image</label>
-                    <button type="button" class="uam-mb-btn uam-mb-btn-secondary" id="uam-btn-select-vision">🖼 Select from Library</button>
-                    <div id="uam-vision-img-preview" class="margin-top-10"></div>
-                    <input type="hidden" id="uam-vision-attach-id">
+                <div class="tabaix-seo-mb-row">
+                    <label class="tabaix-seo-mb-label">Select Image</label>
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-secondary" id="tabaix-seo-btn-select-vision">🖼 Select from Library</button>
+                    <div id="tabaix-seo-vision-img-preview" class="margin-top-10"></div>
+                    <input type="hidden" id="tabaix-seo-vision-attach-id">
                 </div>
-                <div class="uam-mb-actions">
-                    <button type="button" class="uam-mb-btn uam-mb-btn-primary" id="uam-btn-analyze-vision">🔍 Analyze Image</button>
+                <div class="tabaix-seo-mb-actions">
+                    <button type="button" class="tabaix-seo-mb-btn tabaix-seo-mb-btn-primary" id="tabaix-seo-btn-analyze-vision">🔍 Analyze Image</button>
                 </div>
-                <div id="uam-vision-results" class="margin-top-15"></div>
+                <div id="tabaix-seo-vision-results" class="margin-top-15"></div>
             </div>
 
-            <div id="uam-mb-loader" class="uam-mb-loader">
-                <div class="uam-mb-spinner"></div>
+            <div id="tabaix-seo-mb-loader" class="tabaix-seo-mb-loader">
+                <div class="tabaix-seo-mb-spinner"></div>
                 <span>Processing...</span>
             </div>
         </div>
@@ -594,7 +594,7 @@ class TABAIX_SEO_SEO_Meta
         $has_seo_title = (int) $wpdb->get_var("
             SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
-            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_uam_seo_title'
+            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_tabaix_seo_seo_title'
             WHERE p.post_type IN ('post','page')
               AND p.post_status = 'publish'
               AND pm.meta_value != ''
@@ -603,7 +603,7 @@ class TABAIX_SEO_SEO_Meta
         $has_meta_desc = (int) $wpdb->get_var("
             SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
-            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_uam_seo_description'
+            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_tabaix_seo_seo_description'
             WHERE p.post_type IN ('post','page')
               AND p.post_status = 'publish'
               AND pm.meta_value != ''
@@ -612,7 +612,7 @@ class TABAIX_SEO_SEO_Meta
         $has_focus_kw = (int) $wpdb->get_var("
             SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
-            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_uam_focus_keyword'
+            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = '_tabaix_seo_focus_keyword'
             WHERE p.post_type IN ('post','page')
               AND p.post_status = 'publish'
               AND pm.meta_value != ''

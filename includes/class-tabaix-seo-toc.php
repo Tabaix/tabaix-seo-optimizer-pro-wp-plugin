@@ -2,11 +2,11 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_TOC — Table of Contents for Tabaix All-in-One SEO & Optimizer
+ * TABAIX_SEO_TOC — Table of Contents for Tabaix All-in-One SEO & Optimizer
  *
  * Features:
  *  - Auto-inserts TOC into all single posts (configurable)
- *  - [tsp_toc] shortcode for manual placement
+ *  - [tabaix_seo_toc] shortcode for manual placement
  *  - Reads H2, H3, H4 headings
  *  - Smooth scroll + Back To Top button
  *  - Collapsible on mobile
@@ -53,8 +53,8 @@ class TABAIX_SEO_TOC
     public function enqueue_assets()
     {
         if (!is_singular()) return;
-        wp_enqueue_style('tabaix-seo-toc-style', plugins_url('../assets/css/tsp-toc.css', __FILE__), [], '1.0.0');
-        wp_enqueue_script('tabaix-seo-toc-script', plugins_url('../assets/js/tsp-toc.js', __FILE__), [], '1.0.0', true);
+        wp_enqueue_style('tabaix-seo-toc-style', plugins_url('../assets/css/tabaix-seo-toc.css', __FILE__), [], '1.0.0');
+        wp_enqueue_script('tabaix-seo-toc-script', plugins_url('../assets/js/tabaix-seo-toc.js', __FILE__), [], '1.0.0', true);
     }
 
     /**
@@ -72,7 +72,7 @@ class TABAIX_SEO_TOC
         if (!$toc) return $content;
 
         // Back to top button (once per page)
-        $btn = '<button id="tsp-back-top" class="tsp-back-top" aria-label="Back to top" title="Back to top">↑</button>';
+        $btn = '<button id="tabaix-seo-back-top" class="tabaix-seo-back-top" aria-label="Back to top" title="Back to top">↑</button>';
 
         // Insert after first paragraph
         $content = preg_replace('/<\/p>/', '</p>' . $toc, $content, 1);
@@ -80,7 +80,7 @@ class TABAIX_SEO_TOC
     }
 
     /**
-     * [tsp_toc] shortcode.
+     * [tabaix_seo_toc] shortcode.
      */
     public function render_shortcode($atts)
     {
@@ -108,7 +108,7 @@ class TABAIX_SEO_TOC
             if (!$id) $id = 'heading-' . ++$i;
 
             $items .= sprintf(
-                '<li class="tsp-toc-h%s"><a href="#%s">%s</a></li>',
+                '<li class="tabaix-seo-toc-h%s"><a href="#%s">%s</a></li>',
                 esc_attr($level),
                 esc_attr($id),
                 esc_html($text)
@@ -128,12 +128,12 @@ class TABAIX_SEO_TOC
             'itemListElement' => $schema_items,
         ]);
 
-        return '<nav class="tsp-toc-wrap" aria-label="Table of Contents">
-            <div class="tsp-toc-title">
+        return '<nav class="tabaix-seo-toc-wrap" aria-label="Table of Contents">
+            <div class="tabaix-seo-toc-title">
                 <span>📋</span> Table of Contents
-                <button class="tsp-toc-toggle" aria-label="Toggle">▼</button>
+                <button class="tabaix-seo-toc-toggle" aria-label="Toggle">▼</button>
             </div>
-            <ul class="tsp-toc-list">' . $items . '</ul>
+            <ul class="tabaix-seo-toc-list">' . $items . '</ul>
             <script type="application/ld+json">' . $schema . '</script>
         </nav>';
     }

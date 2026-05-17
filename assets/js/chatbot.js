@@ -6,15 +6,15 @@
 
     const cfg = window.uamChatbot || {};
 
-    const Widget = document.getElementById('uam-chatbot-widget');
-    const Toggle = document.getElementById('uam-chatbot-toggle');
-    const Panel = document.getElementById('uam-chatbot-panel');
-    const Messages = document.getElementById('uam-chatbot-messages');
-    const Input = document.getElementById('uam-chatbot-input');
-    const SendBtn = document.getElementById('uam-chatbot-send');
-    const Typing = document.getElementById('uam-chatbot-typing');
-    const ChatIcon = document.getElementById('uam-chat-icon');
-    const CloseIcon = document.getElementById('uam-close-icon');
+    const Widget = document.getElementById('tabaix-seo-chatbot-widget');
+    const Toggle = document.getElementById('tabaix-seo-chatbot-toggle');
+    const Panel = document.getElementById('tabaix-seo-chatbot-panel');
+    const Messages = document.getElementById('tabaix-seo-chatbot-messages');
+    const Input = document.getElementById('tabaix-seo-chatbot-input');
+    const SendBtn = document.getElementById('tabaix-seo-chatbot-send');
+    const Typing = document.getElementById('tabaix-seo-chatbot-typing');
+    const ChatIcon = document.getElementById('tabaix-seo-chat-icon');
+    const CloseIcon = document.getElementById('tabaix-seo-close-icon');
 
     if (!Widget || !Toggle || !Panel) return;
 
@@ -24,7 +24,7 @@
     // ── Toggle Panel ─────────────────────────────────────────────────────
     function openChat() {
         isOpen = true;
-        Panel.classList.add('uam-panel-open');
+        Panel.classList.add('tabaix-seo-panel-open');
         Panel.removeAttribute('aria-hidden');
         ChatIcon.style.display = 'none';
         CloseIcon.style.display = 'block';
@@ -36,7 +36,7 @@
 
     function closeChat() {
         isOpen = false;
-        Panel.classList.remove('uam-panel-open');
+        Panel.classList.remove('tabaix-seo-panel-open');
         Panel.setAttribute('aria-hidden', 'true');
         ChatIcon.style.display = 'block';
         CloseIcon.style.display = 'none';
@@ -67,13 +67,13 @@
     }
 
     function showTyping() {
-        Typing.classList.remove('uam-hidden');
+        Typing.classList.remove('tabaix-seo-hidden');
         Messages.appendChild(Typing);
         scrollToBottom();
     }
 
     function hideTyping() {
-        Typing.classList.add('uam-hidden');
+        Typing.classList.add('tabaix-seo-hidden');
     }
 
     // ── Send Message ──────────────────────────────────────────────────────
@@ -89,7 +89,7 @@
         showTyping();
 
         const formData = new FormData();
-        formData.append('action', 'uam_chatbot_message');
+        formData.append('action', 'tabaix_seo_chatbot_message');
         formData.append('nonce', cfg.nonce || '');
         formData.append('message', text);
 

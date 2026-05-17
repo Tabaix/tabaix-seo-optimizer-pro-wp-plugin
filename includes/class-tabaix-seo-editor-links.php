@@ -37,7 +37,7 @@ class TABAIX_SEO_Editor_Links
         $post_types = ['post', 'page'];
         foreach ($post_types as $type) {
             add_meta_box(
-                'uam-editor-links',
+                'tabaix-seo-editor-links',
                 '🔗 AI Internal Link Suggestions',
                 [$this, 'render_meta_box'],
                 $type,
@@ -71,34 +71,34 @@ class TABAIX_SEO_Editor_Links
     public function render_meta_box($post)
     {
         ?>
-        <div id="uam-el-container">
-            <p class="uam-el-description">
+        <div id="tabaix-seo-el-container">
+            <p class="tabaix-seo-el-description">
                 Analyze your content to find internal linking opportunities. Works with draft or published content.
             </p>
 
-            <button type="button" class="button button-primary uam-el-btn" id="uam-el-scan">
+            <button type="button" class="button button-primary tabaix-seo-el-btn" id="tabaix-seo-el-scan">
                 🧠 Suggest Links
             </button>
-            <button type="button" class="button uam-el-btn uam-el-btn-secondary" id="uam-el-scan-draft"
+            <button type="button" class="button tabaix-seo-el-btn tabaix-seo-el-btn-secondary" id="tabaix-seo-el-scan-draft"
                 title="Analyze current draft content without saving">
                 📝 Scan Draft
             </button>
 
-            <div id="uam-el-status" class="uam-el-status"></div>
-            <div id="uam-el-results"></div>
+            <div id="tabaix-seo-el-status" class="tabaix-seo-el-status"></div>
+            <div id="tabaix-seo-el-results"></div>
 
-            <div id="uam-el-stats" class="uam-el-stats" style="display:none;">
-                <div class="uam-el-stat">
-                    <span class="uam-el-stat-num" id="uam-el-internal-count">0</span>
-                    <span class="uam-el-stat-label">Internal Links</span>
+            <div id="tabaix-seo-el-stats" class="tabaix-seo-el-stats" style="display:none;">
+                <div class="tabaix-seo-el-stat">
+                    <span class="tabaix-seo-el-stat-num" id="tabaix-seo-el-internal-count">0</span>
+                    <span class="tabaix-seo-el-stat-label">Internal Links</span>
                 </div>
-                <div class="uam-el-stat">
-                    <span class="uam-el-stat-num" id="uam-el-external-count">0</span>
-                    <span class="uam-el-stat-label">External Links</span>
+                <div class="tabaix-seo-el-stat">
+                    <span class="tabaix-seo-el-stat-num" id="tabaix-seo-el-external-count">0</span>
+                    <span class="tabaix-seo-el-stat-label">External Links</span>
                 </div>
-                <div class="uam-el-stat">
-                    <span class="uam-el-stat-num" id="uam-el-word-count">0</span>
-                    <span class="uam-el-stat-label">Words</span>
+                <div class="tabaix-seo-el-stat">
+                    <span class="tabaix-seo-el-stat-num" id="tabaix-seo-el-word-count">0</span>
+                    <span class="tabaix-seo-el-stat-label">Words</span>
                 </div>
             </div>
         </div>

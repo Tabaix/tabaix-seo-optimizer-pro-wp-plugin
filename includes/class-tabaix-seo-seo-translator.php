@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * TSP_SEO_Translator — Enterprise Auto-Translator powered by ImageTight API
+ * TABAIX_SEO_SEO_Translator — Enterprise Auto-Translator powered by ImageTight API
  * 
  * - Generates AI translations via Vercel Cloud when saving a post.
  * - Saves translations cleanly in post_meta (no bloated database tables).
@@ -184,7 +184,7 @@ class TABAIX_SEO_SEO_Translator
         if (!current_user_can('edit_post', $post_id)) return;
         if ($post->post_status !== 'publish') return; // Only translate when it's fully published
 
-        $api_key = get_option('tsp_imagetight_api_key', '');
+        $api_key = get_option('tabaix_seo_imagetight_api_key', '');
         if (empty($api_key)) return;
 
         $langs_to_translate = get_option('tabaix_seo_translator_langs', []);
@@ -192,7 +192,7 @@ class TABAIX_SEO_SEO_Translator
 
         foreach ($langs_to_translate as $lang_code) {
             // Prevent re-translating if it already exists
-            if (get_post_meta($post_id, '_tsp_translation_' . $lang_code . '_title', true)) continue;
+            if (get_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', true)) continue;
             // Translate Title
             $title_payload = [
                 'tabaix_license_key' => $api_key,
@@ -222,10 +222,10 @@ class TABAIX_SEO_SEO_Translator
                 $content_data = json_decode(wp_remote_retrieve_body($content_response), true);
 
                 if (!empty($title_data['translated_text'])) {
-                    update_post_meta($post_id, '_tsp_translation_' . $lang_code . '_title', sanitize_text_field($title_data['translated_text']));
+                    update_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', sanitize_text_field($title_data['translated_text']));
                 }
                 if (!empty($content_data['translated_text'])) {
-                    update_post_meta($post_id, '_tsp_translation_' . $lang_code . '_content', wp_kses_post($content_data['translated_text']));
+                    update_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_content', wp_kses_post($content_data['translated_text']));
                 }
             }
         }
@@ -240,14 +240,14 @@ class TABAIX_SEO_SEO_Translator
         // Add rule for /lang/post-name
         add_rewrite_rule(
             '^(' . $lang_codes . ')/([^/]+)/?$',
-            'index.php?name=$matches[2]&tsp_lang=$matches[1]',
+            'index.php?name=$matches[2]&tabaix_seo_lang=$matches[1]',
             'top'
         );
     }
 
     public function add_query_vars($vars)
     {
-        $vars[] = 'tsp_lang';
+        $vars[] = 'tabaix_seo_lang';
         return $vars;
     }
 
@@ -257,10 +257,10 @@ class TABAIX_SEO_SEO_Translator
     public function filter_title($title, $post_id = null)
     {
         if (!is_singular() || !$post_id) return $title;
-        $lang = get_query_var('tsp_lang');
+        $lang = get_query_var('tabaix_seo_lang');
         if (!$lang) return $title;
 
-        $translated_title = get_post_meta($post_id, '_tsp_translation_' . $lang . '_title', true);
+        $translated_title = get_post_meta($post_id, '_tabaix_seo_translation_' . $lang . '_title', true);
         return $translated_title ? $translated_title : $title;
     }
 
@@ -269,9 +269,9 @@ class TABAIX_SEO_SEO_Translator
         if (!is_singular() || !in_the_loop() || !is_main_query()) return $content;
 
         // 1. Check if we are viewing a translated SEO URL
-        $lang = get_query_var('tsp_lang');
+        $lang = get_query_var('tabaix_seo_lang');
         if ($lang) {
-            $translated_content = get_post_meta(get_the_ID(), '_tsp_translation_' . $lang . '_content', true);
+            $translated_content = get_post_meta(get_the_ID(), '_tabaix_seo_translation_' . $lang . '_content', true);
             if ($translated_content) {
                 $content = $translated_content;
             } else {
@@ -290,15 +290,15 @@ class TABAIX_SEO_SEO_Translator
         }
 
         wp_enqueue_style(
-            'tsp-seo-translator-style',
-            plugins_url('../assets/css/tsp-seo-translator.css', __FILE__),
+            'tabaix-seo-seo-translator-style',
+            plugins_url('../assets/css/tabaix-seo-seo-translator.css', __FILE__),
             [],
             '1.0.0'
         );
 
         wp_enqueue_script(
-            'tsp-seo-translator',
-            plugins_url('../assets/js/tsp-seo-translator.js', __FILE__),
+            'tabaix-seo-seo-translator',
+            plugins_url('../assets/js/tabaix-seo-seo-translator.js', __FILE__),
             [],
             '1.0.0',
             true
@@ -307,7 +307,7 @@ class TABAIX_SEO_SEO_Translator
 
     private function get_google_translate_script()
     {
-        return '<div id="google_translate_element" class="tsp-google-translate-element"></div>';
+        return '<div id="google_translate_element" class="tabaix-seo-google-translate-element"></div>';
     }
 
     public function inject_hreflang_tags()
@@ -322,7 +322,7 @@ class TABAIX_SEO_SEO_Translator
 
         // Tags for each available translation
         foreach ($this->all_languages as $code => $name) {
-            if (get_post_meta($post_id, '_tsp_translation_' . $code . '_title', true)) {
+            if (get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
                 $lang_url = home_url('/' . $code . '/' . basename($original_url) . '/');
                 echo '<link rel="alternate" hreflang="' . esc_attr($code) . '" href="' . esc_url($lang_url) . '" />' . "\n";
             }
@@ -335,11 +335,11 @@ class TABAIX_SEO_SEO_Translator
     public function auto_redirect_by_browser_language()
     {
         // Only run on single posts where no language is explicitly requested yet
-        if (!is_singular() || get_query_var('tsp_lang')) return;
+        if (!is_singular() || get_query_var('tabaix_seo_lang')) return;
         if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) return;
 
         // Prevent redirect loops using a cookie
-        if (isset($_COOKIE['tsp_lang_redirected'])) return;
+        if (isset($_COOKIE['tabaix_seo_lang_redirected'])) return;
 
         $post_id = get_the_ID();
         $browser_langs = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
@@ -349,17 +349,17 @@ class TABAIX_SEO_SEO_Translator
             
             // If the browser language is English, do nothing (stay on default)
             if ($lang_code === 'en') {
-                setcookie('tsp_lang_redirected', '1', time() + 86400, '/');
+                setcookie('tabaix_seo_lang_redirected', '1', time() + 86400, '/');
                 return;
             }
 
             // If the browser language matches one of our supported Premium translations
             if (array_key_exists($lang_code, $this->all_languages)) {
                 // Check if this specific post has actually been translated to that language
-                if (get_post_meta($post_id, '_tsp_translation_' . $lang_code . '_title', true)) {
+                if (get_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', true)) {
                     
                     // Mark cookie so we don't force redirect them if they manually switch back to English
-                    setcookie('tsp_lang_redirected', '1', time() + 86400, '/');
+                    setcookie('tabaix_seo_lang_redirected', '1', time() + 86400, '/');
                     
                     // Redirect them automatically to the translated /ar/ version!
                     $original_url = get_permalink($post_id);
@@ -376,13 +376,13 @@ class TABAIX_SEO_SEO_Translator
     {
         $post_id = get_the_ID();
         $original_url = get_permalink($post_id);
-        $current_lang = get_query_var('tsp_lang') ?: 'en';
+        $current_lang = get_query_var('tabaix_seo_lang') ?: 'en';
 
-        $html = '<div class="tsp-language-switcher">';
+        $html = '<div class="tabaix-seo-language-switcher">';
         $html .= '<strong style="margin-right: 10px;">🌍 Read in:</strong>';
         
         // Custom dropdown logic
-        $html .= '<select class="tsp-language-switcher-select">';
+        $html .= '<select class="tabaix-seo-language-switcher-select">';
         
         $en_selected = ($current_lang === 'en') ? 'selected' : '';
         $html .= '<option value="' . esc_url($original_url) . '" ' . $en_selected . '>🇬🇧 English (Original)</option>';
@@ -391,7 +391,7 @@ class TABAIX_SEO_SEO_Translator
         if (is_array($seo_langs) && !empty($seo_langs)) {
             $html .= '<optgroup label="Premium SEO Translations">';
             foreach ($this->all_languages as $code => $name) {
-                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tsp_translation_' . $code . '_title', true)) {
+                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
                     $lang_url = home_url('/' . $code . '/' . basename(untrailingslashit($original_url)) . '/');
                     $selected = ($current_lang === $code) ? 'selected' : '';
                     $html .= '<option value="' . esc_url($lang_url) . '" ' . $selected . '>✨ ' . esc_html($name) . '</option>';
@@ -406,7 +406,7 @@ class TABAIX_SEO_SEO_Translator
             $html .= '<optgroup label="Live Translations (Free)">';
             foreach ($free_langs as $code) {
                 // Do not display in free list if it was already rendered in the Premium list
-                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tsp_translation_' . $code . '_title', true)) {
+                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
                     continue; 
                 }
                 

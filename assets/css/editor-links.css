@@ -2,16 +2,16 @@
    UAM Editor Links — Meta Box Styles
    ═══════════════════════════════════════════════════════════════ */
 
-#uam-editor-links .inside {
+#tabaix-seo-editor-links .inside {
     padding: 0 !important;
     margin: 0 !important;
 }
 
-#uam-el-container {
+#tabaix-seo-el-container {
     padding: 12px;
 }
 
-.uam-el-description {
+.tabaix-seo-el-description {
     color: #666;
     font-size: 12px;
     margin: 0 0 10px;
@@ -19,7 +19,7 @@
 }
 
 /* Buttons */
-.uam-el-btn {
+.tabaix-seo-el-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -28,31 +28,31 @@
     cursor: pointer;
 }
 
-.uam-el-btn-secondary {
+.tabaix-seo-el-btn-secondary {
     color: #555 !important;
 }
 
 /* Status */
-.uam-el-status {
+.tabaix-seo-el-status {
     font-size: 12px;
     margin: 6px 0;
     min-height: 18px;
 }
 
-.uam-el-status.loading {
+.tabaix-seo-el-status.loading {
     color: #2271b1;
 }
 
-.uam-el-status.success {
+.tabaix-seo-el-status.success {
     color: #00a32a;
 }
 
-.uam-el-status.error {
+.tabaix-seo-el-status.error {
     color: #d63638;
 }
 
 /* Stats bar */
-.uam-el-stats {
+.tabaix-seo-el-stats {
     display: flex;
     gap: 6px;
     margin: 10px 0 0;
@@ -60,7 +60,7 @@
     border-top: 1px solid #e0e0e0;
 }
 
-.uam-el-stat {
+.tabaix-seo-el-stat {
     flex: 1;
     text-align: center;
     padding: 6px 4px;
@@ -68,7 +68,7 @@
     border-radius: 4px;
 }
 
-.uam-el-stat-num {
+.tabaix-seo-el-stat-num {
     display: block;
     font-size: 18px;
     font-weight: 700;
@@ -76,7 +76,7 @@
     line-height: 1.2;
 }
 
-.uam-el-stat-label {
+.tabaix-seo-el-stat-label {
     display: block;
     font-size: 10px;
     color: #888;
@@ -86,7 +86,7 @@
 }
 
 /* Suggestion cards */
-.uam-el-suggestion {
+.tabaix-seo-el-suggestion {
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-left: 3px solid #2271b1;
@@ -96,24 +96,24 @@
     transition: border-color 0.2s;
 }
 
-.uam-el-suggestion:hover {
+.tabaix-seo-el-suggestion:hover {
     border-left-color: #135e96;
     background: #f0f6fc;
 }
 
-.uam-el-suggestion.priority-high {
+.tabaix-seo-el-suggestion.priority-high {
     border-left-color: #00a32a;
 }
 
-.uam-el-suggestion.priority-medium {
+.tabaix-seo-el-suggestion.priority-medium {
     border-left-color: #dba617;
 }
 
-.uam-el-suggestion.priority-low {
+.tabaix-seo-el-suggestion.priority-low {
     border-left-color: #a7aaad;
 }
 
-.uam-el-anchor {
+.tabaix-seo-el-anchor {
     font-weight: 600;
     color: #135e96;
     font-size: 13px;
@@ -121,25 +121,25 @@
     margin-bottom: 3px;
 }
 
-.uam-el-target {
+.tabaix-seo-el-target {
     font-size: 11px;
     color: #666;
     margin: 2px 0;
 }
 
-.uam-el-target a {
+.tabaix-seo-el-target a {
     color: #2271b1;
     text-decoration: none;
 }
 
-.uam-el-reason {
+.tabaix-seo-el-reason {
     font-size: 11px;
     color: #888;
     font-style: italic;
     margin: 4px 0 6px;
 }
 
-.uam-el-priority {
+.tabaix-seo-el-priority {
     display: inline-block;
     font-size: 10px;
     padding: 1px 6px;
@@ -150,23 +150,23 @@
     margin-right: 6px;
 }
 
-.uam-el-priority.high {
+.tabaix-seo-el-priority.high {
     background: #d1fae5;
     color: #065f46;
 }
 
-.uam-el-priority.medium {
+.tabaix-seo-el-priority.medium {
     background: #fef3cd;
     color: #856404;
 }
 
-.uam-el-priority.low {
+.tabaix-seo-el-priority.low {
     background: #e2e3e5;
     color: #6c757d;
 }
 
 /* Insert button */
-.uam-el-insert-btn {
+.tabaix-seo-el-insert-btn {
     display: inline-flex;
     align-items: center;
     gap: 3px;
@@ -180,29 +180,29 @@
     transition: background 0.2s;
 }
 
-.uam-el-insert-btn:hover {
+.tabaix-seo-el-insert-btn:hover {
     background: #135e96 !important;
 }
 
-.uam-el-insert-btn.inserted {
+.tabaix-seo-el-insert-btn.inserted {
     background: #00a32a !important;
     cursor: default;
 }
 
-.uam-el-insert-btn.failed {
+.tabaix-seo-el-insert-btn.failed {
     background: #d63638 !important;
     cursor: default;
 }
 
 /* No suggestions */
-.uam-el-empty {
+.tabaix-seo-el-empty {
     text-align: center;
     padding: 16px 10px;
     color: #888;
     font-size: 12px;
 }
 
-.uam-el-empty .dashicons {
+.tabaix-seo-el-empty .dashicons {
     font-size: 32px;
     width: 32px;
     height: 32px;
@@ -212,26 +212,26 @@
 }
 
 /* Loading spinner in meta box */
-.uam-el-spinner {
+.tabaix-seo-el-spinner {
     display: inline-block;
     width: 16px;
     height: 16px;
     border: 2px solid #e0e0e0;
     border-top-color: #2271b1;
     border-radius: 50%;
-    animation: uam-el-spin 0.6s linear infinite;
+    animation: tabaix-seo-el-spin 0.6s linear infinite;
     vertical-align: middle;
     margin-right: 6px;
 }
 
-@keyframes uam-el-spin {
+@keyframes tabaix-seo-el-spin {
     to {
         transform: rotate(360deg);
     }
 }
 
 /* Tip box */
-.uam-el-tip {
+.tabaix-seo-el-tip {
     background: #f0f6fc;
     border: 1px solid #c5d9ed;
     border-radius: 4px;
@@ -241,6 +241,6 @@
     margin-top: 10px;
 }
 
-.uam-el-tip strong {
+.tabaix-seo-el-tip strong {
     color: #135e96;
 }

@@ -24,10 +24,10 @@
   }
 
   function initLanguageSwitcher() {
-    var wrapper = document.querySelector('.tsp-language-switcher');
+    var wrapper = document.querySelector('.tabaix-seo-language-switcher');
     if (!wrapper) return;
 
-    var select = wrapper.querySelector('.tsp-language-switcher-select');
+    var select = wrapper.querySelector('.tabaix-seo-language-switcher-select');
     if (!select) return;
 
     select.addEventListener('change', function () {

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Smooth scroll for TOC links
-    document.querySelectorAll('.tsp-toc-list a').forEach(function(a) {
+    document.querySelectorAll('.tabaix-seo-toc-list a').forEach(function(a) {
         a.addEventListener('click', function(e) {
             var target = document.querySelector(this.getAttribute('href'));
             if (target) {
@@ -10,10 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     // Toggle collapse
-    document.querySelectorAll('.tsp-toc-title').forEach(function(title) {
+    document.querySelectorAll('.tabaix-seo-toc-title').forEach(function(title) {
         title.addEventListener('click', function() {
             var list = this.nextElementSibling;
-            var btn  = this.querySelector('.tsp-toc-toggle');
+            var btn  = this.querySelector('.tabaix-seo-toc-toggle');
             if (list) {
                 list.style.display = list.style.display === 'none' ? '' : 'none';
                 if (btn) btn.textContent = list.style.display === 'none' ? '▶' : '▼';
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     // Back to top button
-    var btn = document.getElementById('tsp-back-top');
+    var btn = document.getElementById('tabaix-seo-back-top');
     if (btn) {
         window.addEventListener('scroll', function() {
             btn.style.display = window.scrollY > 400 ? 'flex' : 'none';

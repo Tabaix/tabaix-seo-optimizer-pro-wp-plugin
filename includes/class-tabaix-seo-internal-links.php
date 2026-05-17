@@ -17,7 +17,7 @@ if (!defined('ABSPATH'))
  */
 class TABAIX_SEO_Internal_Links
 {
-    const META_LINK_SCAN = '_uam_link_scan';
+    const META_LINK_SCAN = '_tabaix_seo_link_scan';
     const OPTION_AUTOLINK_RULES = 'tabaix_seo_autolink_rules';
     const OPTION_MANUAL_LINKS = 'tabaix_seo_manual_links';
 
@@ -149,7 +149,7 @@ class TABAIX_SEO_Internal_Links
         }, $existing_anchors)) : 'None';
 
         $custom_gemini_key = TABAIX_SEO_Settings::get('gemini_api_key');
-        $tabaix_license_key = get_option('itc_api_key', '');
+        $tabaix_license_key = get_option('tabaix_seo_itc_api_key', '');
 
         // Vercel Cloud Execution: Use Vercel Edge compute if SaaS license is provided, BUT use the user's API key
         if (!empty($tabaix_license_key) && !empty($custom_gemini_key)) {
@@ -669,7 +669,7 @@ class TABAIX_SEO_Internal_Links
             $max = intval($link['max_links'] ?? 1);
 
             $attrs = 'href="' . esc_url($url) . '"';
-            $attrs .= ' class="uam-manual-link"';
+            $attrs .= ' class="tabaix-seo-manual-link"';
             if (!empty($link['title']))
                 $attrs .= ' title="' . esc_attr($link['title']) . '"';
             if (!empty($link['nofollow']))
@@ -918,7 +918,7 @@ class TABAIX_SEO_Internal_Links
             $url = $rule['url'];
             $max = intval($rule['max_links'] ?? 1);
 
-            $attrs = 'href="' . esc_url($url) . '" class="uam-autolink"';
+            $attrs = 'href="' . esc_url($url) . '" class="tabaix-seo-autolink"';
             if (!empty($rule['nofollow']))
                 $attrs .= ' rel="nofollow noopener"';
             if (!empty($rule['new_tab']))

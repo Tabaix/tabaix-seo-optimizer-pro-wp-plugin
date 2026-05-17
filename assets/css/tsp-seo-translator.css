@@ -1,4 +1,4 @@
-.tsp-language-switcher {
+.tabaix-seo-language-switcher {
   margin-bottom: 20px;
   padding: 10px;
   background: #f8fafc;
@@ -7,12 +7,12 @@
   display: inline-block;
 }
 
-.tsp-language-switcher-select {
+.tabaix-seo-language-switcher-select {
   padding: 5px;
   border-radius: 5px;
   min-width: 150px;
 }
 
-.tsp-google-translate-element {
+.tabaix-seo-google-translate-element {
   display: none;
 }
