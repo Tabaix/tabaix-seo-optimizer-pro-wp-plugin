@@ -95,7 +95,7 @@ permanently. See privacy policy for details.
 
 == Source Code ==
 The full source code for this plugin is available at:
-https://github.com/Tabaix/image-tight
+https://github.com/Tabaix/tabaix-seo-optimizer-pro
 
 == Changelog ==
 
