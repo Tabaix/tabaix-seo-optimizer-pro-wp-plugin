@@ -341,7 +341,10 @@ class TABAIX_SEO_ImageTight
         }
 
         // Send to ImageTight API
-        $file_data = file_get_contents($file_path);
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        WP_Filesystem();
+        global $wp_filesystem;
+        $file_data = $wp_filesystem->get_contents($file_path);
         $boundary  = wp_generate_password(20, false);
         $body      = "--{$boundary}\r\n"
             . "Content-Disposition: form-data; name=\"image\"; filename=\"" . basename($file_path) . "\"\r\n"
@@ -379,7 +382,7 @@ class TABAIX_SEO_ImageTight
 
         // Save compressed file
         $compressed = wp_remote_retrieve_body($response);
-        file_put_contents($file_path, $compressed);
+        $wp_filesystem->put_contents($file_path, $compressed, FS_CHMOD_FILE);
 
         $new_size   = strlen($compressed);
         $saved      = max(0, $original_size - $new_size);
