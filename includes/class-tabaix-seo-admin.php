@@ -1690,7 +1690,7 @@ class TABAIX_SEO_Admin
         <div class="tabaix-seo-header">
             <div class="tabaix-seo-header-brand">
                 <span class="tabaix-seo-header-icon">✦</span>
-                <h1 class="tabaix-seo-header-title">Ultimate AI Master</h1>
+                <h1 class="tabaix-seo-header-title">Tabaix SEO Optimizer Pro</h1>
                 <span class="tabaix-seo-header-version">v
                     <?php echo esc_html(TABAIX_SEO_VERSION); ?>
                 </span>

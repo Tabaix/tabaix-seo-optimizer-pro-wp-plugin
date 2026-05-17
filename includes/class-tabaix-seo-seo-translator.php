@@ -95,7 +95,7 @@ class TABAIX_SEO_SEO_Translator
     private function __construct()
     {
         // Settings & Admin
-        add_action('admin_menu', [$this, 'register_admin_page']);
+        add_action('admin_menu', [$this, 'register_admin_page'], 99);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('save_post', [$this, 'handle_auto_translation'], 10, 3);
 
