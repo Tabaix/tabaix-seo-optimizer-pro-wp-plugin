@@ -65,6 +65,11 @@ class TABAIX_SEO_TOC
         if (!TABAIX_SEO_Settings::get('toc_enabled', 1)) return $content;
         if (!is_singular('post')) return $content;
 
+        // If the post already contains a manual TOC block or shortcode, do not auto-insert.
+        if (stripos($content, '[tabaix_seo_toc]') !== false || stripos($content, 'tabai/advanced-toc') !== false || stripos($content, 'tabaix/advanced-toc') !== false) {
+            return $content;
+        }
+
         // Only if post has at least 2 H2s
         if (substr_count(strtolower($content), '<h2') < 2) return $content;
 
@@ -144,6 +149,23 @@ class TABAIX_SEO_TOC
     public function inject_heading_ids($content)
     {
         if (!is_singular()) return $content;
+
+        global $post;
+        // If the content does not contain a manual TOC shortcode or the TOC block,
+        // and there are not multiple headings, skip injecting IDs for performance.
+        $has_shortcode = stripos($content, '[tabaix_seo_toc]') !== false;
+        $has_block_in_content = false;
+        if (is_a($post, 'WP_Post')) {
+            $has_block_in_content = has_block('tabai/advanced-toc', $post->post_content)
+                || has_block('tabai/advanced-toc', $content)
+                || has_block('tabaix/advanced-toc', $post->post_content)
+                || has_block('tabaix/advanced-toc', $content);
+        }
+
+        if (!$has_shortcode && !$has_block_in_content && substr_count(strtolower($content), '<h2') < 2) {
+            return $content;
+        }
+
         return preg_replace_callback('/<h([2-4])([^>]*)>(.*?)<\/h[2-4]>/i', function($m) {
             $level = $m[1];
             $attrs = $m[2];

@@ -3,10 +3,17 @@
     "apiVersion": 3,
     "name": "tabai/advanced-toc",
     "version": "1.0.0",
-    "title": "Tabai Advanced Table of Contents",
-    "category": "design",
+    "title": "Advanced Table of Contents",
+    "category": "widgets",
     "icon": "list-view",
-    "description": "A highly customizable, SEO-friendly Table of Contents block.",
+    "description": "A highly customizable Table of Contents block for Tabaix SEO Optimizer Pro.",
+    "keywords": [
+        "toc",
+        "table of contents",
+        "contents",
+        "headings",
+        "outline"
+    ],
     "supports": {
         "html": false,
         "anchor": true,
@@ -15,7 +22,7 @@
             "full"
         ]
     },
-    "textdomain": "tabai-advanced-toc",
+    "textdomain": "tabaix-advanced-toc",
     "attributes": {
         "title": {
             "type": "string",
@@ -103,5 +110,6 @@
     },
     "editorScript": "file:./toc-build/index.js",
     "editorStyle": "file:./toc-build/index.css",
-    "style": "file:./toc-build/style-index.css"
+    "style": "file:./toc-build/style-index.css",
+    "viewScript": "file:./toc-build/view.js"
 }
