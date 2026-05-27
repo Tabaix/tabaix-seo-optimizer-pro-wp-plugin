@@ -316,48 +316,83 @@ class TABAIX_SEO_ImageTight
         check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
         if (!current_user_can('upload_files')) wp_send_json_error();
 
-        $image_id = (int)($_POST['image_id'] ?? 0);
+        $image_id = isset($_POST['image_id']) ? (int) wp_unslash($_POST['image_id']) : 0;
         $api_key  = get_option(self::OPT_API_KEY, '');
-        $quality  = (int)get_option(self::OPT_QUALITY, 75);
-        $format   = get_option(self::OPT_FORMAT, 'webp');
-        $do_backup= (int)get_option(self::OPT_BACKUP, 1);
-        $gemini_key= get_option(self::OPT_GEMINI_KEY, '');
-        $language = get_option(self::OPT_LANGUAGE, 'English');
 
-        if (!$image_id || empty($api_key)) wp_send_json_error(['message' => 'Missing image ID or API key.']);
+        if (!$image_id || empty($api_key)) {
+            wp_send_json_error(['message' => 'Missing image ID or API key.']);
+        }
+
+        $result = $this->compress_image($image_id);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+        }
+
+        wp_send_json_success($result);
+    }
+
+    /**
+     * Core image compression logic — used by both AJAX handler and auto-compress on upload.
+     *
+     * @param int $image_id Attachment post ID.
+     * @return array|WP_Error Compression result data on success, WP_Error on failure.
+     */
+    private function compress_image($image_id)
+    {
+        $api_key    = get_option(self::OPT_API_KEY, '');
+        $quality    = (int) get_option(self::OPT_QUALITY, 75);
+        $format     = sanitize_key(get_option(self::OPT_FORMAT, 'webp'));
+        $do_backup  = (int) get_option(self::OPT_BACKUP, 1);
+        $gemini_key = get_option(self::OPT_GEMINI_KEY, '');
+        $language   = sanitize_text_field(get_option(self::OPT_LANGUAGE, 'English'));
+
+        if (empty($api_key)) {
+            return new WP_Error('no_api_key', 'ImageTight API key is not configured.');
+        }
 
         $file_path = get_attached_file($image_id);
-        if (!$file_path || !file_exists($file_path)) wp_send_json_error(['message' => 'File not found.']);
+        if (!$file_path || !file_exists($file_path)) {
+            return new WP_Error('file_not_found', 'Attachment file not found.');
+        }
 
         $original_size = filesize($file_path);
 
-        // Backup original
+        // Backup original before overwriting
         $backup_path = '';
         if ($do_backup) {
-            $upload_dir = wp_upload_dir();
-            $backup_dir = $upload_dir['basedir'] . '/imagetight-backups/';
+            $upload_dir  = wp_upload_dir();
+            $backup_dir  = trailingslashit($upload_dir['basedir']) . 'imagetight-backups/';
             wp_mkdir_p($backup_dir);
             $backup_path = $backup_dir . basename($file_path) . '.itc_backup';
             copy($file_path, $backup_path);
         }
 
-        // Send to ImageTight API
+        // Read file via WP_Filesystem (not file_get_contents)
         require_once ABSPATH . 'wp-admin/includes/file.php';
         WP_Filesystem();
         global $wp_filesystem;
         $file_data = $wp_filesystem->get_contents($file_path);
-        $boundary  = wp_generate_password(20, false);
-        $body      = "--{$boundary}\r\n"
-            . "Content-Disposition: form-data; name=\"image\"; filename=\"" . basename($file_path) . "\"\r\n"
-            . "Content-Type: " . mime_content_type($file_path) . "\r\n\r\n"
+        if (false === $file_data) {
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return new WP_Error('read_error', 'Could not read image file.');
+        }
+
+        // Build multipart request body
+        $boundary = wp_generate_password(20, false);
+        $body     = "--{$boundary}\r\n"
+            . 'Content-Disposition: form-data; name="image"; filename="' . basename($file_path) . "\"\r\n"
+            . 'Content-Type: ' . mime_content_type($file_path) . "\r\n\r\n"
             . $file_data . "\r\n"
             . "--{$boundary}--";
 
         $api_url = add_query_arg([
-            'api_key' => $api_key,
-            'quality' => $quality,
-            'format'  => $format,
-            'language'=> $language,
+            'api_key'  => $api_key,
+            'quality'  => $quality,
+            'format'   => $format,
+            'language' => $language,
         ], self::API_ENDPOINT);
 
         if (!empty($gemini_key)) {
@@ -371,43 +406,50 @@ class TABAIX_SEO_ImageTight
         ]);
 
         if (is_wp_error($response)) {
-            if ($backup_path && file_exists($backup_path)) wp_delete_file($backup_path);
-            wp_send_json_error(['message' => $response->get_error_message()]);
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return $response;
         }
 
         $code = wp_remote_retrieve_response_code($response);
         if ($code !== 200) {
-            if ($backup_path && file_exists($backup_path)) wp_delete_file($backup_path);
-            wp_send_json_error(['message' => "API error (HTTP {$code})"]);
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return new WP_Error('api_error', "ImageTight API error (HTTP {$code})");
         }
 
-        // Save compressed file
+        // Write compressed file back
         $compressed = wp_remote_retrieve_body($response);
         $wp_filesystem->put_contents($file_path, $compressed, FS_CHMOD_FILE);
 
-        $new_size   = strlen($compressed);
-        $saved      = max(0, $original_size - $new_size);
+        $new_size = strlen($compressed);
+        $saved    = max(0, $original_size - $new_size);
 
-        // Check for AI Generated Alt Text in headers (base64 encoded)
+        // Save AI-generated alt text if returned in response header
         $alt_text_b64 = wp_remote_retrieve_header($response, 'x-generated-alt');
         if (!empty($alt_text_b64)) {
-            $alt_text = base64_decode($alt_text_b64);
+            // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+            $alt_text = base64_decode($alt_text_b64, true);
             if ($alt_text) {
                 update_post_meta($image_id, '_wp_attachment_image_alt', sanitize_text_field($alt_text));
             }
         }
 
-        // Update metadata
-        update_post_meta($image_id, '_itc_is_optimized', '1');
-        update_post_meta($image_id, '_itc_bytes_saved',  $saved);
+        // Persist compression metadata
+        update_post_meta($image_id, '_itc_is_optimized',  '1');
+        update_post_meta($image_id, '_itc_bytes_saved',   $saved);
         update_post_meta($image_id, '_itc_original_size', $original_size);
-        if ($backup_path) update_post_meta($image_id, '_itc_backup_path', $backup_path);
+        if ($backup_path) {
+            update_post_meta($image_id, '_itc_backup_path', $backup_path);
+        }
 
-        wp_send_json_success([
+        return [
             'saved'     => $saved,
             'saved_fmt' => size_format($saved, 2),
             'new_size'  => size_format($new_size, 2),
-        ]);
+        ];
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -445,14 +487,14 @@ class TABAIX_SEO_ImageTight
         check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_send_json_error();
 
-        update_option(self::OPT_API_KEY,   sanitize_text_field($_POST['api_key'] ?? ''));
-        update_option(self::OPT_QUALITY,   min(100, max(1, (int)($_POST['quality'] ?? 75))));
-        update_option(self::OPT_FORMAT,    sanitize_key($_POST['format'] ?? 'webp'));
-        update_option(self::OPT_THRESHOLD, max(50, (int)($_POST['threshold'] ?? 150)));
-        update_option(self::OPT_AUTO,      (int)($_POST['auto'] ?? 0));
-        update_option(self::OPT_BACKUP,    (int)($_POST['backup'] ?? 1));
-        update_option(self::OPT_GEMINI_KEY, sanitize_text_field($_POST['gemini_key'] ?? ''));
-        update_option(self::OPT_LANGUAGE,  sanitize_text_field($_POST['language'] ?? 'English'));
+        update_option(self::OPT_API_KEY,   sanitize_text_field(wp_unslash($_POST['api_key']   ?? '')));
+        update_option(self::OPT_QUALITY,   min(100, max(1, (int) wp_unslash($_POST['quality']   ?? 75))));
+        update_option(self::OPT_FORMAT,    sanitize_key(wp_unslash($_POST['format']    ?? 'webp')));
+        update_option(self::OPT_THRESHOLD, max(50, (int) wp_unslash($_POST['threshold'] ?? 150)));
+        update_option(self::OPT_AUTO,      (int) wp_unslash($_POST['auto']      ?? 0));
+        update_option(self::OPT_BACKUP,    (int) wp_unslash($_POST['backup']    ?? 1));
+        update_option(self::OPT_GEMINI_KEY, sanitize_text_field(wp_unslash($_POST['gemini_key'] ?? '')));
+        update_option(self::OPT_LANGUAGE,  sanitize_text_field(wp_unslash($_POST['language']   ?? 'English')));
 
         wp_send_json_success('Settings saved.');
     }
@@ -478,13 +520,16 @@ class TABAIX_SEO_ImageTight
     // ══════════════════════════════════════════════════════════════════
     public function auto_compress_on_upload($metadata, $attachment_id)
     {
-        if (!(int)get_option(self::OPT_AUTO, 0)) return $metadata;
-        if (empty(get_option(self::OPT_API_KEY, ''))) return $metadata;
+        if (!(int) get_option(self::OPT_AUTO, 0)) {
+            return $metadata;
+        }
+        if (empty(get_option(self::OPT_API_KEY, ''))) {
+            return $metadata;
+        }
 
-        $_POST['image_id'] = $attachment_id;
-        $_REQUEST['nonce'] = wp_create_nonce('tabaix_seo_admin_nonce');
+        // Call the core compression logic directly — never manipulate superglobals.
+        $this->compress_image((int) $attachment_id);
 
-        $this->ajax_compress();
         return $metadata;
     }
 }

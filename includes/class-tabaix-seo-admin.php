@@ -56,7 +56,7 @@ class TABAIX_SEO_Admin
             'provider' => TABAIX_SEO_Settings::get('provider', 'gemini'),
             'pluginUrl' => TABAIX_SEO_PLUGIN_URL,
             'chatbotEnabled' => (int) TABAIX_SEO_Settings::get('chatbot_enabled', 0),
-            'currentPage' => sanitize_text_field($_GET['page'] ?? 'tabaix-seo-dashboard'),
+            'currentPage' => sanitize_text_field(wp_unslash($_GET['page'] ?? 'tabaix-seo-dashboard')),
         ]);
     }
 
@@ -1424,18 +1424,18 @@ class TABAIX_SEO_Admin
     {
         if (isset($_POST['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'tabaix_seo_settings_nonce')) {
             $settings = TABAIX_SEO_Settings::get();
-            $settings['provider'] = sanitize_key($_POST['provider'] ?? 'gemini');
-            $settings['gemini_api_key'] = sanitize_text_field($_POST['gemini_api_key'] ?? '');
-            $settings['openai_api_key'] = sanitize_text_field($_POST['openai_api_key'] ?? '');
-            $settings['gemini_model'] = sanitize_text_field($_POST['gemini_model'] ?? TABAIX_SEO_API::DEFAULT_GEMINI_MODEL);
-            $settings['openai_model'] = sanitize_text_field($_POST['openai_model'] ?? TABAIX_SEO_API::DEFAULT_OPENAI_MODEL);
-            $settings['chatbot_enabled'] = isset($_POST['chatbot_enabled']) ? 1 : 0;
-            $settings['chatbot_greeting'] = sanitize_textarea_field($_POST['chatbot_greeting'] ?? '');
-            $settings['chatbot_position'] = sanitize_text_field($_POST['chatbot_position'] ?? 'bottom-right');
-            $settings['moderation_auto'] = isset($_POST['moderation_auto']) ? 1 : 0;
+            $settings['provider']          = sanitize_key(wp_unslash($_POST['provider'] ?? 'gemini'));
+            $settings['gemini_api_key']    = sanitize_text_field(wp_unslash($_POST['gemini_api_key'] ?? ''));
+            $settings['openai_api_key']    = sanitize_text_field(wp_unslash($_POST['openai_api_key'] ?? ''));
+            $settings['gemini_model']      = sanitize_text_field(wp_unslash($_POST['gemini_model'] ?? TABAIX_SEO_API::DEFAULT_GEMINI_MODEL));
+            $settings['openai_model']      = sanitize_text_field(wp_unslash($_POST['openai_model'] ?? TABAIX_SEO_API::DEFAULT_OPENAI_MODEL));
+            $settings['chatbot_enabled']   = isset($_POST['chatbot_enabled']) ? 1 : 0;
+            $settings['chatbot_greeting']  = sanitize_textarea_field(wp_unslash($_POST['chatbot_greeting'] ?? ''));
+            $settings['chatbot_position']  = sanitize_text_field(wp_unslash($_POST['chatbot_position'] ?? 'bottom-right'));
+            $settings['moderation_auto']   = isset($_POST['moderation_auto']) ? 1 : 0;
             $settings['analytics_enabled'] = isset($_POST['analytics_enabled']) ? 1 : 0;
             $settings['recommend_enabled'] = isset($_POST['recommend_enabled']) ? 1 : 0;
-            $settings['alt_text_auto'] = isset($_POST['alt_text_auto']) ? 1 : 0;
+            $settings['alt_text_auto']     = isset($_POST['alt_text_auto']) ? 1 : 0;
             update_option(TABAIX_SEO_Settings::OPTION_KEY, $settings);
             echo '<div class="tabaix-seo-notice tabaix-seo-notice-success">✅ Settings saved successfully!</div>';
         }

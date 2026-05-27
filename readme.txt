@@ -1,5 +1,5 @@
 === Tabaix SEO Optimizer Pro ===
-Contributors: tabaix, tabaix.com
+Contributors: tabaix
 Tags: image compression, webp, avif, seo, internal linking, artificial intelligence, content generation
 Requires at least: 6.0
 Tested up to: 6.9
