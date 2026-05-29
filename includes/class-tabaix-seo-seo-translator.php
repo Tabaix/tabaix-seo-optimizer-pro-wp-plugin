@@ -334,12 +334,10 @@ class TABAIX_SEO_SEO_Translator
     ─────────────────────────────────────────────── */
     public function auto_redirect_by_browser_language()
     {
-        // Only run on single posts where no language is explicitly requested yet
-        if (!is_singular() || get_query_var('tabaix_seo_lang')) return;
-        if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) return;
+        // Disabled auto-redirect to give users choice. 
+        // Users must explicitly select a language from the language switcher.
+        return;
 
-        // Prevent redirect loops using a cookie
-        if (isset($_COOKIE['tabaix_seo_lang_redirected'])) return;
 
         $post_id = get_the_ID();
         $browser_langs = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
@@ -385,16 +383,23 @@ class TABAIX_SEO_SEO_Translator
         $html .= '<select class="tabaix-seo-language-switcher-select">';
         
         $en_selected = ($current_lang === 'en') ? 'selected' : '';
-        $html .= '<option value="' . esc_url($original_url) . '" ' . $en_selected . '>🇬🇧 English (Original)</option>';
+        $html .= '<option value="' . esc_url($original_url) . '" ' . $en_selected . ' data-lang-code="en">🇬🇧 English (Original)</option>';
 
         $seo_langs  = get_option('tabaix_seo_translator_langs', []);
-        if (is_array($seo_langs) && !empty($seo_langs)) {
+        if (!is_array($seo_langs)) {
+            $seo_langs = maybe_unserialize($seo_langs);
+        }
+        if (!is_array($seo_langs)) {
+            $seo_langs = !empty($seo_langs) ? array_map('trim', explode(',', (string) $seo_langs)) : array();
+        }
+
+        if (!empty($seo_langs)) {
             $html .= '<optgroup label="Premium SEO Translations">';
             foreach ($this->all_languages as $code => $name) {
-                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
+                if (in_array($code, $seo_langs, true) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
                     $lang_url = home_url('/' . $code . '/' . basename(untrailingslashit($original_url)) . '/');
                     $selected = ($current_lang === $code) ? 'selected' : '';
-                    $html .= '<option value="' . esc_url($lang_url) . '" ' . $selected . '>✨ ' . esc_html($name) . '</option>';
+                    $html .= '<option value="' . esc_url($lang_url) . '" ' . $selected . ' data-lang-code="' . esc_attr($code) . '">✨ ' . esc_html($name) . '</option>';
                 }
             }
             $html .= '</optgroup>';
@@ -402,16 +407,23 @@ class TABAIX_SEO_SEO_Translator
 
         // Free Fallback Languages (Google Translate)
         $free_langs = get_option('tabaix_seo_free_langs', []);
-        if (is_array($free_langs) && !empty($free_langs)) {
+        if (!is_array($free_langs)) {
+            $free_langs = maybe_unserialize($free_langs);
+        }
+        if (!is_array($free_langs)) {
+            $free_langs = !empty($free_langs) ? array_map('trim', explode(',', (string) $free_langs)) : array();
+        }
+
+        if (!empty($free_langs)) {
             $html .= '<optgroup label="Live Translations (Free)">';
             foreach ($free_langs as $code) {
                 // Do not display in free list if it was already rendered in the Premium list
-                if (in_array($code, $seo_langs) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
+                if (in_array($code, $seo_langs, true) && get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
                     continue; 
                 }
                 
                 if (isset($this->all_languages[$code])) {
-                    $html .= '<option value="' . esc_attr($code) . '">' . esc_html($this->all_languages[$code]) . '</option>';
+                    $html .= '<option value="' . esc_attr($code) . '" data-lang-code="' . esc_attr($code) . '">' . esc_html($this->all_languages[$code]) . '</option>';
                 }
             }
             $html .= '</optgroup>';
