@@ -38,6 +38,11 @@ class TABAIX_SEO_Settings
             'chatbot_enabled' => 0,
             'chatbot_greeting' => 'Hello! I am your AI assistant. How can I help you today?',
             'chatbot_position' => 'bottom-right',
+
+            // Translation feature toggles
+            'translator_enabled'       => 1,  // Auto-translate posts on publish
+            'show_language_switcher'   => 1,  // Show the language dropdown on posts
+            'auto_redirect_enabled'    => 0,  // Auto-redirect visitors by browser language
         ];
 
         if (!get_option(self::OPTION_KEY)) {
@@ -77,6 +82,12 @@ class TABAIX_SEO_Settings
         $clean['chatbot_greeting'] = sanitize_textarea_field($input['chatbot_greeting'] ?? 'Hello! I am your AI assistant. How can I help you today?');
         $clean['chatbot_position'] = in_array($input['chatbot_position'] ?? 'bottom-right', ['bottom-right', 'bottom-left'], true)
             ? $input['chatbot_position'] : 'bottom-right';
+
+        // Translation feature toggles
+        $clean['translator_enabled']     = !empty($input['translator_enabled'])     ? 1 : 0;
+        $clean['show_language_switcher'] = !empty($input['show_language_switcher']) ? 1 : 0;
+        $clean['auto_redirect_enabled']  = !empty($input['auto_redirect_enabled'])  ? 1 : 0;
+
         return $clean;
     }
 

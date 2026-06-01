@@ -556,7 +556,7 @@ class TABAIX_SEO_API
             }
             $data = json_decode(wp_remote_retrieve_body($response), true);
             $msg = $data['error']['message'] ?? "API error (HTTP {$code})";
-            if ($code === 400 && str_contains($msg, 'API key not valid')) {
+            if ($code === 400 && strpos($msg, 'API key not valid') !== false) {
                 $msg = 'Invalid API key. Please check you copied the full key from AI Studio.';
             }
             return new WP_Error('test_failed', $msg);

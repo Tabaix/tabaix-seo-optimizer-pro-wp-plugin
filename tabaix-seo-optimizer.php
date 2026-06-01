@@ -9,6 +9,8 @@
  * License:     GPL-2.0+
  * Text Domain: tabaix-seo-optimizer-pro
  * Domain Path: /languages
+ * Requires at least: 5.8
+ * Requires PHP:  7.4
  */
 
 if (!defined('ABSPATH')) {
@@ -23,7 +25,7 @@ define('TABAIX_SEO_PLUGIN_FILE', __FILE__);
 define('TABAIX_SEO_TEXT_DOMAIN', 'tabaix-seo-optimizer-pro');
 
 // ─── Autoload Includes ────────────────────────────────────────────────────────
-$includes = [
+$tabaix_seo_includes = [
     'includes/class-tabaix-seo-settings.php',
     'includes/class-tabaix-seo-api.php',
     'includes/class-tabaix-seo-content-generator.php',
@@ -47,11 +49,9 @@ $includes = [
     'includes/class-tabaix-seo-seo-translator.php',
 ];
 
-foreach ($includes as $file) {
-    $path = TABAIX_SEO_PLUGIN_DIR . $file;
-    if (file_exists($path)) {
-        require_once $path;
-    }
+foreach ($tabaix_seo_includes as $tabaix_seo_file) {
+    $tabaix_seo_path = TABAIX_SEO_PLUGIN_DIR . $tabaix_seo_file;
+    require_once $tabaix_seo_path;
 }
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────

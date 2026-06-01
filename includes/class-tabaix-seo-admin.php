@@ -1436,6 +1436,7 @@ class TABAIX_SEO_Admin
             $settings['analytics_enabled'] = isset($_POST['analytics_enabled']) ? 1 : 0;
             $settings['recommend_enabled'] = isset($_POST['recommend_enabled']) ? 1 : 0;
             $settings['alt_text_auto']     = isset($_POST['alt_text_auto']) ? 1 : 0;
+            $settings['toc_enabled']       = isset($_POST['toc_enabled']) ? 1 : 0;
             update_option(TABAIX_SEO_Settings::OPTION_KEY, $settings);
             echo '<div class="tabaix-seo-notice tabaix-seo-notice-success">✅ Settings saved successfully!</div>';
         }
@@ -1653,6 +1654,13 @@ class TABAIX_SEO_Admin
                                 <span class="tabaix-seo-toggle-slider"></span>
                             </label>
                             <span>Auto-Generate Image Alt Text on Upload</span>
+                        </div>
+                        <div class="tabaix-seo-field-group tabaix-seo-toggle-group">
+                            <label class="tabaix-seo-toggle-switch">
+                                <input type="checkbox" name="toc_enabled" value="1" <?php checked($s['toc_enabled'] ?? 1, 1); ?>>
+                                <span class="tabaix-seo-toggle-slider"></span>
+                            </label>
+                            <span>Auto-Insert Table of Contents in Posts</span>
                         </div>
                         <div class="tabaix-seo-field-group tabaix-seo-toggle-group">
                             <label class="tabaix-seo-toggle-switch">

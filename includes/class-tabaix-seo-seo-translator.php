@@ -96,8 +96,14 @@ class TABAIX_SEO_SEO_Translator
     {
         // Settings & Admin
         add_action('admin_menu', [$this, 'register_admin_page'], 99);
-        add_action('admin_init', [$this, 'register_settings']);
         add_action('save_post', [$this, 'handle_auto_translation'], 10, 3);
+
+        // Manual translate meta box
+        add_action('add_meta_boxes', [$this, 'add_translation_meta_box']);
+        add_action('wp_ajax_tabaix_seo_translate_post', [$this, 'ajax_translate_post']);
+
+        // Settings save handler
+        add_action('admin_post_tabaix_seo_save_translations', [$this, 'handle_save_translations']);
 
         // Frontend Virtual Pages (Rewrite Rules)
         add_action('init', [$this, 'add_rewrite_rules']);
@@ -109,15 +115,6 @@ class TABAIX_SEO_SEO_Translator
         add_filter('the_content', [$this, 'filter_content']);
         add_action('wp_head', [$this, 'inject_hreflang_tags']);
         add_action('template_redirect', [$this, 'auto_redirect_by_browser_language']);
-    }
-
-    /* ───────────────────────────────────────────────
-       Admin Settings
-    ─────────────────────────────────────────────── */
-    public function register_settings()
-    {
-        register_setting('tabaix_seo_translator_group', 'tabaix_seo_translator_langs');
-        register_setting('tabaix_seo_translator_group', 'tabaix_seo_free_langs');
     }
 
     public function register_admin_page()
@@ -132,103 +129,336 @@ class TABAIX_SEO_SEO_Translator
         );
     }
 
+    public function handle_save_translations()
+    {
+        if (isset($_POST['tabaix_seo_translator_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tabaix_seo_translator_nonce'])), 'tabaix_seo_translator_save')) {
+            if (!current_user_can('manage_options')) wp_die('Unauthorized');
+
+            $settings = TABAIX_SEO_Settings::get();
+            if (!is_array($settings)) $settings = [];
+            
+            $settings['translator_enabled']     = !empty($_POST['tabaix_seo_settings']['translator_enabled']) ? 1 : 0;
+            $settings['show_language_switcher'] = !empty($_POST['tabaix_seo_settings']['show_language_switcher']) ? 1 : 0;
+            $settings['auto_redirect_enabled']  = !empty($_POST['tabaix_seo_settings']['auto_redirect_enabled']) ? 1 : 0;
+            update_option(TABAIX_SEO_Settings::OPTION_KEY, $settings);
+
+            $translator_langs = isset($_POST['tabaix_seo_translator_langs']) ? array_map('sanitize_key', (array)$_POST['tabaix_seo_translator_langs']) : [];
+            $free_langs = isset($_POST['tabaix_seo_free_langs']) ? array_map('sanitize_key', (array)$_POST['tabaix_seo_free_langs']) : [];
+            
+            update_option('tabaix_seo_translator_langs', $translator_langs);
+            update_option('tabaix_seo_free_langs', $free_langs);
+
+            wp_safe_redirect(admin_url('admin.php?page=tabaix-seo-translations&saved=true'));
+            exit;
+        }
+    }
+
     public function render_admin_page()
     {
+        if (isset($_GET['saved']) && $_GET['saved'] === 'true') {
+            echo '<div class="notice notice-success is-dismissible"><p><strong>💾 Translation settings saved successfully!</strong></p></div>';
+        }
+
         $seo_langs  = get_option('tabaix_seo_translator_langs', []);
         $free_langs = get_option('tabaix_seo_free_langs', []);
-        if (!is_array($seo_langs)) $seo_langs = [];
+        if (!is_array($seo_langs))  $seo_langs  = [];
         if (!is_array($free_langs)) $free_langs = [];
 
-        echo '<div class="wrap">';
-        echo '<h1>Global SEO Translations</h1>';
-        echo '<p>Configure how your blog posts are translated across your entire site automatically.</p>';
-        
-        echo '<form method="post" action="options.php">';
-        settings_fields('tabaix_seo_translator_group');
+        $translator_on = (int) TABAIX_SEO_Settings::get('translator_enabled',     1);
+        $switcher_on   = (int) TABAIX_SEO_Settings::get('show_language_switcher', 1);
+        $redirect_on   = (int) TABAIX_SEO_Settings::get('auto_redirect_enabled',  0);
+        ?>
+        <style>
+        .tabaix-tg-grid{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0 28px;}
+        .tabaix-tg-card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:18px 22px;min-width:240px;flex:1;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+        .tabaix-tg-card h4{margin:0 0 5px;font-size:14px;}
+        .tabaix-tg-card p{margin:0 0 14px;color:#666;font-size:12px;line-height:1.5;}
+        .tabaix-sw{position:relative;display:inline-block;width:46px;height:24px;vertical-align:middle;}
+        .tabaix-sw input{opacity:0;width:0;height:0;}
+        .tabaix-sl{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.3s;}
+        .tabaix-sl:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+        input:checked+.tabaix-sl{background:#2271b1;}
+        input:checked+.tabaix-sl:before{transform:translateX(22px);}
+        .tabaix-tg-row{display:flex;align-items:center;gap:10px;}
+        .tabaix-badge{font-weight:700;font-size:12px;padding:2px 9px;border-radius:20px;background:#e0e0e0;color:#555;}
+        .tabaix-badge.on{background:#d4edda;color:#155724;}
+        </style>
+        <div class="wrap">
+        <h1>🌍 SEO Translations</h1>
+        <p>Control how posts are translated and what visitors see. Toggle each feature on or off independently.</p>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+        <input type="hidden" name="action" value="tabaix_seo_save_translations">
+        <?php wp_nonce_field('tabaix_seo_translator_save', 'tabaix_seo_translator_nonce'); ?>
 
-        echo '<h3>Premium SEO Languages (Cost: 1 API Credit per Post)</h3>';
-        echo '<p>These languages will be automatically translated and permanently saved to your database whenever you publish a new post. This guarantees Google indexing and high organic traffic.</p>';
-        
-        foreach ($this->all_languages as $code => $name) {
-            $checked = in_array($code, $seo_langs) ? 'checked' : '';
-            echo '<label style="display:inline-block; width:200px; margin-bottom:10px;">';
-            echo '<input type="checkbox" name="tabaix_seo_translator_langs[]" value="' . esc_attr($code) . '" ' . $checked . '> ' . esc_html($name);
-            echo '</label>';
-        }
+        <h2 style="margin-bottom:6px;">⚙️ Feature Toggles</h2>
+        <div class="tabaix-tg-grid">
 
-        echo '<hr style="margin: 20px 0;">';
-        echo '<h3>Free Live Translations (Cost: 0 Credits)</h3>';
-        echo '<p>These languages will appear in the frontend dropdown but will be translated instantly in the users browser using Google Translate. Excellent for global accessibility, but they do NOT rank in Google.</p>';
+          <div class="tabaix-tg-card">
+            <h4>🔄 Auto-Translate Posts</h4>
+            <p>Translate posts automatically on publish using your Gemini or OpenAI key. No external service required.</p>
+            <div class="tabaix-tg-row">
+              <label class="tabaix-sw">
+                <input type="hidden"   name="tabaix_seo_settings[translator_enabled]" value="0">
+                <input type="checkbox" name="tabaix_seo_settings[translator_enabled]" value="1" <?php checked($translator_on,1); ?>>
+                <span class="tabaix-sl"></span>
+              </label>
+              <span class="tabaix-badge <?php echo $translator_on?'on':''; ?>"><?php echo $translator_on?'ON':'OFF'; ?></span>
+            </div>
+          </div>
 
-        foreach ($this->all_languages as $code => $name) {
-            // Option to skip showing it in Free if it's already selected as Premium, 
-            // but we allow them to check both if they want, the frontend logic handles it cleanly.
-            $checked = in_array($code, $free_langs) ? 'checked' : '';
-            echo '<label style="display:inline-block; width:200px; margin-bottom:10px;">';
-            echo '<input type="checkbox" name="tabaix_seo_free_langs[]" value="' . esc_attr($code) . '" ' . $checked . '> ' . esc_html($name);
-            echo '</label>';
-        }
+          <div class="tabaix-tg-card">
+            <h4>🌐 Show Language Switcher Button</h4>
+            <p>Display a language selector dropdown on every post so readers can switch between available translations.</p>
+            <div class="tabaix-tg-row">
+              <label class="tabaix-sw">
+                <input type="hidden"   name="tabaix_seo_settings[show_language_switcher]" value="0">
+                <input type="checkbox" name="tabaix_seo_settings[show_language_switcher]" value="1" <?php checked($switcher_on,1); ?>>
+                <span class="tabaix-sl"></span>
+              </label>
+              <span class="tabaix-badge <?php echo $switcher_on?'on':''; ?>"><?php echo $switcher_on?'ON':'OFF'; ?></span>
+            </div>
+          </div>
 
-        echo '<br><br>';
-        submit_button('Save Global Translation Settings');
-        echo '</form>';
-        echo '</div>';
+          <div class="tabaix-tg-card">
+            <h4>↪️ Auto-Redirect by Browser Language</h4>
+            <p>Automatically redirect visitors to the translated version based on their browser language (like Amazon). Off by default.</p>
+            <div class="tabaix-tg-row">
+              <label class="tabaix-sw">
+                <input type="hidden"   name="tabaix_seo_settings[auto_redirect_enabled]" value="0">
+                <input type="checkbox" name="tabaix_seo_settings[auto_redirect_enabled]" value="1" <?php checked($redirect_on,1); ?>>
+                <span class="tabaix-sl"></span>
+              </label>
+              <span class="tabaix-badge <?php echo $redirect_on?'on':''; ?>"><?php echo $redirect_on?'ON':'OFF'; ?></span>
+            </div>
+          </div>
+
+        </div>
+
+        <hr style="margin:8px 0 24px;">
+        <h2>✨ Premium SEO Languages</h2>
+        <p>Translated by your AI key and <strong>saved permanently</strong> — creates real URLs like <code>/ar/your-post/</code> that Google can index and rank.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 0;">
+        <?php foreach ($this->all_languages as $code => $name) :
+            $ch = in_array($code, $seo_langs) ? 'checked' : ''; ?>
+          <label style="display:inline-block;width:210px;margin-bottom:8px;">
+            <input type="checkbox" name="tabaix_seo_translator_langs[]" value="<?php echo esc_attr($code); ?>" <?php echo esc_attr($ch); ?>>
+            <?php echo esc_html($name); ?>
+          </label>
+        <?php endforeach; ?>
+        </div>
+
+        <hr style="margin:24px 0;">
+        <h2>🆓 Free Live Translations</h2>
+        <p>Shown in the dropdown but translated <strong>live in the visitor's browser</strong> via Google Translate. Not indexed by Google.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 0;">
+        <?php foreach ($this->all_languages as $code => $name) :
+            $ch = in_array($code, $free_langs) ? 'checked' : ''; ?>
+          <label style="display:inline-block;width:210px;margin-bottom:8px;">
+            <input type="checkbox" name="tabaix_seo_free_langs[]" value="<?php echo esc_attr($code); ?>" <?php echo esc_attr($ch); ?>>
+            <?php echo esc_html($name); ?>
+          </label>
+        <?php endforeach; ?>
+        </div>
+
+        <br><br>
+        <?php submit_button('💾 Save Translation Settings'); ?>
+        </form>
+        </div>
+        <?php
     }
 
     /* ───────────────────────────────────────────────
        Translation Trigger (Save Post - Global)
     ─────────────────────────────────────────────── */
-    public function handle_auto_translation($post_id, $post, $update)
+    /**
+     * Translate a single post into all configured premium languages using Gemini/OpenAI.
+     * Called automatically on save_post, or manually via AJAX.
+     *
+     * @param int     $post_id
+     * @param WP_Post $post
+     * @param bool    $update
+     * @param bool    $force   Set true to re-translate even if a translation already exists.
+     */
+    public function handle_auto_translation($post_id, $post, $update, $force = false)
     {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
         if (!current_user_can('edit_post', $post_id)) return;
-        if ($post->post_status !== 'publish') return; // Only translate when it's fully published
+        if ($post->post_status !== 'publish') return;
 
-        $api_key = get_option('tabaix_seo_imagetight_api_key', '');
-        if (empty($api_key)) return;
+        // Respect the "Auto-Translate Posts" toggle (manual force always bypasses)
+        if (!$force && !TABAIX_SEO_Settings::get('translator_enabled', 1)) return;
 
         $langs_to_translate = get_option('tabaix_seo_translator_langs', []);
+        if (!is_array($langs_to_translate)) {
+            $langs_to_translate = maybe_unserialize($langs_to_translate);
+        }
         if (empty($langs_to_translate) || !is_array($langs_to_translate)) return;
 
+
         foreach ($langs_to_translate as $lang_code) {
-            // Prevent re-translating if it already exists
-            if (get_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', true)) continue;
-            // Translate Title
-            $title_payload = [
-                'tabaix_license_key' => $api_key,
-                'text' => $post->post_title,
-                'target_language' => $this->all_languages[$lang_code] ?? $lang_code
-            ];
-            $title_response = wp_remote_post('https://imagetight-api.vercel.app/api/translate', [
-                'body' => json_encode($title_payload),
-                'headers' => ['Content-Type' => 'application/json'],
-                'timeout' => 30
+            $lang_name = $this->all_languages[$lang_code] ?? $lang_code;
+
+            // Skip if already translated (unless force-retranslate)
+            if (!$force && get_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', true)) {
+                continue;
+            }
+
+            // ── Translate Title ──────────────────────────────────────────────
+            $title_prompt = "Translate the following text into {$lang_name}. "
+                . "Return ONLY the translated text, nothing else. No explanations, no quotes.\n\n"
+                . $post->post_title;
+
+            $translated_title = TABAIX_SEO_API::generate($title_prompt, '', [
+                'max_tokens' => 200,
+                'temperature' => 0.3,
             ]);
 
-            // Translate Content
-            $content_payload = [
-                'tabaix_license_key' => $api_key,
-                'text' => $post->post_content,
-                'target_language' => $this->all_languages[$lang_code] ?? $lang_code
-            ];
-            $content_response = wp_remote_post('https://imagetight-api.vercel.app/api/translate', [
-                'body' => json_encode($content_payload),
-                'headers' => ['Content-Type' => 'application/json'],
-                'timeout' => 60
+            if (!is_wp_error($translated_title) && !empty(trim($translated_title))) {
+                update_post_meta(
+                    $post_id,
+                    '_tabaix_seo_translation_' . $lang_code . '_title',
+                    sanitize_text_field(trim($translated_title))
+                );
+            }
+
+            // ── Translate Content ────────────────────────────────────────────
+            // Strip shortcodes and blocks from the raw content before sending;
+            // keep HTML so the translated content renders correctly.
+            $raw_content = $post->post_content;
+
+            $content_prompt = "Translate the following WordPress post content into {$lang_name}. "
+                . "Preserve all HTML tags exactly as they are. "
+                . "Return ONLY the translated HTML, nothing else.\n\n"
+                . $raw_content;
+
+            $translated_content = TABAIX_SEO_API::generate($content_prompt, '', [
+                'max_tokens' => 8192,
+                'temperature' => 0.3,
             ]);
 
-            if (!is_wp_error($title_response) && !is_wp_error($content_response)) {
-                $title_data = json_decode(wp_remote_retrieve_body($title_response), true);
-                $content_data = json_decode(wp_remote_retrieve_body($content_response), true);
-
-                if (!empty($title_data['translated_text'])) {
-                    update_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', sanitize_text_field($title_data['translated_text']));
-                }
-                if (!empty($content_data['translated_text'])) {
-                    update_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_content', wp_kses_post($content_data['translated_text']));
-                }
+            if (!is_wp_error($translated_content) && !empty(trim($translated_content))) {
+                update_post_meta(
+                    $post_id,
+                    '_tabaix_seo_translation_' . $lang_code . '_content',
+                    wp_kses_post(trim($translated_content))
+                );
             }
         }
+    }
+
+    /* ───────────────────────────────────────────────
+       Manual Translate Meta Box (Post Editor)
+    ─────────────────────────────────────────────── */
+
+    public function add_translation_meta_box()
+    {
+        add_meta_box(
+            'tabaix_seo_translate_box',
+            '🌍 SEO Translations',
+            [$this, 'render_translation_meta_box'],
+            ['post', 'page'],
+            'side',
+            'default'
+        );
+    }
+
+    public function render_translation_meta_box($post)
+    {
+        $langs = get_option('tabaix_seo_translator_langs', []);
+        if (!is_array($langs)) $langs = [];
+
+        if (empty($langs)) {
+            echo '<p style="color:#666;">No languages selected. Go to <a href="' . esc_url( admin_url('admin.php?page=tabaix-seo-translations') ) . '">🌍 Translations</a> to configure.</p>';
+            return;
+        }
+
+        echo '<p style="margin:0 0 8px;"><strong>Configured languages:</strong></p>';
+        echo '<ul style="margin:0 0 10px; padding-left:16px;">';
+        foreach ($langs as $code) {
+            $has = (bool) get_post_meta($post->ID, '_tabaix_seo_translation_' . $code . '_title', true);
+            $label = esc_html($this->all_languages[$code] ?? $code);
+            $icon  = $has ? '✅' : '⏳';
+            echo '<li>' . esc_html( $icon ) . ' ' . esc_html( $label ) . '</li>';
+        }
+        echo '</ul>';
+
+        wp_nonce_field('tabaix_seo_translate_nonce', 'tabaix_seo_translate_nonce');
+        echo '<button type="button" id="tabaix-seo-translate-btn" class="button button-primary" style="width:100%;">';
+        echo '🔄 Translate / Re-translate Now</button>';
+        echo '<p id="tabaix-seo-translate-msg" style="margin-top:8px; color:#2271b1;"></p>';
+        ?>
+        <script>
+        document.getElementById('tabaix-seo-translate-btn').addEventListener('click', function() {
+            var btn = this;
+            var msg = document.getElementById('tabaix-seo-translate-msg');
+            btn.disabled = true;
+            btn.textContent = '⏳ Translating…';
+            msg.textContent = '';
+            fetch(ajaxurl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({
+                    action: 'tabaix_seo_translate_post',
+                    post_id: <?php echo (int) $post->ID; ?>,
+                    nonce: document.getElementById('tabaix_seo_translate_nonce').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    msg.style.color = '#00a32a';
+                    msg.textContent = '✅ ' + data.data.message;
+                } else {
+                    msg.style.color = '#d63638';
+                    msg.textContent = '❌ ' + (data.data || 'Translation failed.');
+                }
+                btn.disabled = false;
+                btn.textContent = '🔄 Translate / Re-translate Now';
+            })
+            .catch(function() {
+                msg.style.color = '#d63638';
+                msg.textContent = '❌ Network error. Please try again.';
+                btn.disabled = false;
+                btn.textContent = '🔄 Translate / Re-translate Now';
+            });
+        });
+        </script>
+        <?php
+    }
+
+    public function ajax_translate_post()
+    {
+        check_ajax_referer('tabaix_seo_translate_nonce', 'nonce');
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Unauthorized.');
+        }
+
+        $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+        if (!$post_id) {
+            wp_send_json_error('Invalid post ID.');
+        }
+
+        $post = get_post($post_id);
+        if (!$post) {
+            wp_send_json_error('Post not found.');
+        }
+
+        // Force re-translate all languages
+        $this->handle_auto_translation($post_id, $post, true, true);
+
+        // Count how many translations now exist
+        $langs = get_option('tabaix_seo_translator_langs', []);
+        if (!is_array($langs)) $langs = [];
+        $done = 0;
+        foreach ($langs as $code) {
+            if (get_post_meta($post_id, '_tabaix_seo_translation_' . $code . '_title', true)) {
+                $done++;
+            }
+        }
+
+        wp_send_json_success([
+            'message' => "Translated into {$done} of " . count($langs) . " language(s) successfully.",
+        ]);
     }
 
     /* ───────────────────────────────────────────────
@@ -279,8 +509,23 @@ class TABAIX_SEO_SEO_Translator
             }
         }
 
-        // 2. Add Language Switcher Dropdown & Google Translate Fallback
-        return $this->get_language_switcher() . $content . $this->get_google_translate_script();
+        // 2. Show Language Switcher only when toggle is ON
+        if (!TABAIX_SEO_Settings::get('show_language_switcher', 1)) {
+            return $content;
+        }
+
+        // Wrapped in try/catch to prevent fatal errors if wp_options returns
+        // a non-array value for the language settings (e.g. corrupted serialisation).
+        try {
+            $switcher = $this->get_language_switcher();
+        } catch ( \Throwable $e ) {
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'TABAIX SEO Translator - get_language_switcher() error: ' . $e->getMessage() );
+            }
+            $switcher = '';
+        }
+
+        return $switcher . $content . $this->get_google_translate_script();
     }
 
     public function enqueue_assets()
@@ -334,36 +579,42 @@ class TABAIX_SEO_SEO_Translator
     ─────────────────────────────────────────────── */
     public function auto_redirect_by_browser_language()
     {
-        // Disabled auto-redirect to give users choice. 
-        // Users must explicitly select a language from the language switcher.
-        return;
+        // Only run if the "Auto-Redirect by Browser Language" toggle is ON
+        if (!TABAIX_SEO_Settings::get('auto_redirect_enabled', 0)) {
+            return;
+        }
 
+        if (!is_singular()) return;
+
+        // If we are already on a translated page, do not redirect!
+        if (get_query_var('tabaix_seo_lang')) {
+            return;
+        }
+
+        // Only redirect once per browser session so users can switch back to English
+        if (!empty($_COOKIE['tabaix_seo_lang_redirected'])) return;
 
         $post_id = get_the_ID();
-        $browser_langs = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-        
+        if (!$post_id) return;
+
+            $browser_langs = explode(',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '' ) ) );
+
         foreach ($browser_langs as $lang_string) {
-            $lang_code = substr($lang_string, 0, 2); // e.g. "en-US" -> "en", "ar-SA" -> "ar"
-            
-            // If the browser language is English, do nothing (stay on default)
+            $lang_code = substr(trim($lang_string), 0, 2); // "en-US" -> "en", "ar-SA" -> "ar"
+
+            // If the browser language is English, stay on the default page
             if ($lang_code === 'en') {
                 setcookie('tabaix_seo_lang_redirected', '1', time() + 86400, '/');
                 return;
             }
 
-            // If the browser language matches one of our supported Premium translations
+            // Check if we support this language and if this post has been translated
             if (array_key_exists($lang_code, $this->all_languages)) {
-                // Check if this specific post has actually been translated to that language
                 if (get_post_meta($post_id, '_tabaix_seo_translation_' . $lang_code . '_title', true)) {
-                    
-                    // Mark cookie so we don't force redirect them if they manually switch back to English
                     setcookie('tabaix_seo_lang_redirected', '1', time() + 86400, '/');
-                    
-                    // Redirect them automatically to the translated /ar/ version!
                     $original_url = get_permalink($post_id);
                     $lang_url = home_url('/' . $lang_code . '/' . basename(untrailingslashit($original_url)) . '/');
-                    
-                    wp_redirect($lang_url, 302);
+                    wp_safe_redirect($lang_url, 302);
                     exit;
                 }
             }
@@ -390,8 +641,9 @@ class TABAIX_SEO_SEO_Translator
             $seo_langs = maybe_unserialize($seo_langs);
         }
         if (!is_array($seo_langs)) {
-            $seo_langs = !empty($seo_langs) ? array_map('trim', explode(',', (string) $seo_langs)) : array();
+            $seo_langs = !empty($seo_langs) ? array_map('trim', explode(',', (string) $seo_langs)) : [];
         }
+        $seo_langs = array_values(array_filter((array) $seo_langs, 'is_string'));
 
         if (!empty($seo_langs)) {
             $html .= '<optgroup label="Premium SEO Translations">';

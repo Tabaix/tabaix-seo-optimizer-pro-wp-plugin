@@ -45,6 +45,10 @@ class TABAIX_SEO_TOC
 
     public function register_block()
     {
+        // Guard against duplicate registration (e.g. when the block is loaded more than once).
+        if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabai/advanced-toc' ) ) {
+            return;
+        }
         register_block_type(__DIR__ . '/toc-block.json', [
             'render_callback' => [$this, 'render_block']
         ]);
@@ -219,14 +223,14 @@ class TABAIX_SEO_TOC
         </nav>
 
         <?php if (!empty($attributes['backToTop'])): ?>
-            <button class="tabai-toc-back-to-top" aria-label="<?php esc_attr_e('Back to Top', 'tabaix-seo-optimizer'); ?>"
+            <button class="tabai-toc-back-to-top" aria-label="<?php esc_attr_e('Back to Top', 'tabaix-seo-optimizer-pro'); ?>"
                 style="display:none;">
                 <span class="dashicons dashicons-arrow-up-alt2"></span>
             </button>
         <?php endif; ?>
 
         <?php if (!empty($attributes['floatingMobileBtn'])): ?>
-            <button class="tabai-toc-mobile-trigger" aria-label="<?php esc_attr_e('Table of Contents', 'tabaix-seo-optimizer'); ?>">
+            <button class="tabai-toc-mobile-trigger" aria-label="<?php esc_attr_e('Table of Contents', 'tabaix-seo-optimizer-pro'); ?>">
                 <span class="dashicons dashicons-list-view"></span>
             </button>
         <?php endif; ?>
@@ -275,7 +279,7 @@ class TABAIX_SEO_TOC
             $tag = strtolower($match[1]);
             $attrs = $match[2];
             $raw_text = $match[3];
-            $clean_text = strip_tags($raw_text);
+            $clean_text = wp_strip_all_tags($raw_text);
 
             if (empty($attributes['show' . strtoupper($tag)])) {
                 continue;

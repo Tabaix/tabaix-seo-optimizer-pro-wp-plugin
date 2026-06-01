@@ -1,8 +1,8 @@
 === Tabaix SEO Optimizer Pro ===
 Contributors: tabaix
-Tags: image compression, webp, avif, seo, internal linking, artificial intelligence, content generation
-Requires at least: 6.0
-Tested up to: 6.9
+Tags: seo, image compression, internal linking, ai, content generation
+Requires at least: 5.8
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 2.0.0
 License: GPLv2 or later
@@ -68,34 +68,40 @@ It analyzes your existing posts and uses advanced AI to build semantic relations
 
 This plugin connects to the following external services:
 
-= ImageTight API =
-Used for: Bulk image compression of WordPress media library images
-Data sent: Image files from your media library when you run compression
-API endpoint: https://imagetight-api.vercel.app
-Terms of Service: https://imagetight.com/terms
-Privacy Policy: https://imagetight.com/privacy
-
-= OpenAI API =
-Used for: AI-powered SEO suggestions and content analysis
-Data sent: Post content and meta data when you use AI features
-You must provide your own OpenAI API key
-Terms of Service: https://openai.com/terms
-Privacy Policy: https://openai.com/privacy
+= ImageTight Image Compression API =
+* **What it does:** Compresses and converts images (WebP/AVIF) from your WordPress Media Library.
+* **What data is sent:** Image files from your media library, sent only when you manually trigger compression or enable auto-compress on upload.
+* **API endpoint:** https://imagetight-api.vercel.app
+* **Terms of Service:** https://imagetight.com/terms
+* **Privacy Policy:** https://imagetight.com/privacy
 
 = Google Gemini API =
-Used for: AI image generation and content suggestions
-Data sent: Text prompts when you use AI generation features
-You must provide your own Google AI Studio API key
-Terms of Service: https://ai.google.dev/terms
-Privacy Policy: https://policies.google.com/privacy
+* **What it does:** Powers AI-assisted text generation, content suggestions, SEO meta drafting, alt text generation, internal link suggestions, auto-translation, and chatbot responses.
+* **What data is sent:** Post content, titles, and image data (for vision features) — sent only when you explicitly trigger an AI feature. Requires your own Google AI Studio API key.
+* **API endpoint:** https://generativelanguage.googleapis.com
+* **Terms of Service:** https://ai.google.dev/terms
+* **Privacy Policy:** https://policies.google.com/privacy
 
-NOTE: The ImageTight compression feature sends image files to 
-imagetight-api.vercel.app for processing. Images are not stored 
-permanently. See privacy policy for details.
+= OpenAI API =
+* **What it does:** Alternative AI provider for the same text generation, SEO, and image generation features above.
+* **What data is sent:** Post content, titles, and prompts — sent only when you explicitly trigger an AI feature using your OpenAI key. Requires your own OpenAI API key.
+* **API endpoint:** https://api.openai.com
+* **Terms of Service:** https://openai.com/terms
+* **Privacy Policy:** https://openai.com/privacy
+
+NOTE: No data is sent to any external service automatically without user action, except for image compression if "Auto-Compress on Upload" is enabled in your settings.
 
 == Source Code ==
-The full source code for this plugin is available at:
+
+The full source code for this plugin, including the uncompiled source for all build files, is available at:
 https://github.com/Tabaix/tabaix-seo-optimizer-pro
+
+The compiled files in `includes/toc-build/` and `includes/pros-cons-build/` are generated from the source in the `/src/` directory of the repository using standard WordPress block build tools (`@wordpress/scripts`).
+
+To rebuild the assets:
+1. Clone the repository
+2. Run `npm install`
+3. Run `npm run build`
 
 == Changelog ==
 

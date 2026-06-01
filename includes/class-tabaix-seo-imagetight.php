@@ -365,7 +365,11 @@ class TABAIX_SEO_ImageTight
             $backup_dir  = trailingslashit($upload_dir['basedir']) . 'imagetight-backups/';
             wp_mkdir_p($backup_dir);
             $backup_path = $backup_dir . basename($file_path) . '.itc_backup';
-            copy($file_path, $backup_path);
+            // Use WP_Filesystem to copy (already initialized above)
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+            global $wp_filesystem;
+            $wp_filesystem->copy($file_path, $backup_path, true);
         }
 
         // Read file via WP_Filesystem (not file_get_contents)
