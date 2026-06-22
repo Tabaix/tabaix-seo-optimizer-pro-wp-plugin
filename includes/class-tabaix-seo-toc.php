@@ -27,20 +27,15 @@ class TABAIX_SEO_TOC
 
     private function __construct()
     {
-        // Auto-insert TOC into content
-        // Disabled per user request: auto-insertion can make the TOC harder to customize.
-        // To re-enable automatic insertion, uncomment the line below.
-        // add_filter('the_content', [$this, 'auto_insert_toc'], 20);
-
-        // Add anchor IDs to headings
+        // Add anchor IDs to headings (required for the manual TOC shortcode and block)
         add_filter('the_content', [$this, 'inject_heading_ids'], 15);
 
-        // Shortcode for manual placement
+        // Shortcode for manual placement: [tabaix_seo_toc]
         add_shortcode('tabaix_seo_toc', [$this, 'render_shortcode']);
 
         // Enqueue frontend styles
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
-        
+
         // Register Gutenberg block
         add_action('init', [$this, 'register_block']);
     }
@@ -61,33 +56,6 @@ class TABAIX_SEO_TOC
         if (!is_singular()) return;
         wp_enqueue_style('tabaix-seo-toc-style', plugins_url('../assets/css/tabaix-seo-toc.css', __FILE__), [], '1.0.0');
         wp_enqueue_script('tabaix-seo-toc-script', plugins_url('../assets/js/tabaix-seo-toc.js', __FILE__), [], '1.0.0', true);
-    }
-
-    /**
-     * Auto-insert TOC after first paragraph in single posts.
-     */
-    public function auto_insert_toc($content)
-    {
-        if (!TABAIX_SEO_Settings::get('toc_enabled', 1)) return $content;
-        if (!is_singular('post')) return $content;
-
-        // If the post already contains a manual TOC block or shortcode, do not auto-insert.
-        if (stripos($content, '[tabaix_seo_toc]') !== false || stripos($content, 'tabai/advanced-toc') !== false || stripos($content, 'tabaix/advanced-toc') !== false) {
-            return $content;
-        }
-
-        // Only if post has at least 2 H2s
-        if (substr_count(strtolower($content), '<h2') < 2) return $content;
-
-        $toc = $this->build_toc($content);
-        if (!$toc) return $content;
-
-        // Back to top button (once per page)
-        $btn = '<button id="tabaix-seo-back-top" class="tabaix-seo-back-top" aria-label="Back to top" title="Back to top">↑</button>';
-
-        // Insert after first paragraph
-        $content = preg_replace('/<\/p>/', '</p>' . $toc, $content, 1);
-        return $content . $btn;
     }
 
     /**

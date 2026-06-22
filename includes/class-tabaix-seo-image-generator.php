@@ -63,7 +63,8 @@ Return ONLY the image prompt (no explanation, no quotes). The prompt should be 1
             // base64 image
             $parts = explode(',', $image_source, 2);
             $b64data = $parts[1] ?? '';
-            $img_data = base64_decode($b64data);
+            // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Decoding AI-returned image data URI, not obfuscated code.
+            $img_data = base64_decode($b64data); // Safe: input is a data: URI from Gemini/DALL-E API response.
 
             $upload = wp_upload_bits($filename, null, $img_data);
             if ($upload['error']) {

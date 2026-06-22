@@ -34,8 +34,8 @@ class TABAIX_SEO_ImageTight
     const OPT_GEMINI_KEY= 'tabaix_seo_itc_gemini_api_key';
     const OPT_LANGUAGE  = 'tabaix_seo_itc_language';
 
-    const API_ENDPOINT  = 'https://imagetight-api.vercel.app/api/compress';
-    const QUOTA_URL     = 'https://imagetight-api.vercel.app/api/quota';
+    const API_ENDPOINT  = 'https://imagetight.com/api/compress';
+    const QUOTA_URL     = 'https://imagetight.com/api/quota';
 
     public static function get_instance()
     {
@@ -59,6 +59,12 @@ class TABAIX_SEO_ImageTight
 
         // Enqueue scripts
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_scripts']);
+
+        // Frontend shortcode and AJAX
+        add_shortcode('imagetight_quota', [$this, 'render_quota_shortcode']);
+        add_action('wp_ajax_tabaix_seo_itc_frontend_quota', [$this, 'ajax_frontend_quota']);
+        add_action('wp_ajax_nopriv_tabaix_seo_itc_frontend_quota', [$this, 'ajax_frontend_quota']);
     }
 
     public function enqueue_scripts($hook)
@@ -74,6 +80,34 @@ class TABAIX_SEO_ImageTight
             'hasKey'  => !empty($api_key),
             'ajaxUrl' => admin_url('admin-ajax.php'),
         ]);
+    }
+
+    public function enqueue_frontend_scripts()
+    {
+        $api_key = get_option(self::OPT_API_KEY, '');
+        if (empty($api_key)) return;
+
+        wp_enqueue_script('jquery');
+        $script = "
+        jQuery(document).ready(function($) {
+            if ($('.itc-live-quota').length > 0) {
+                $.get('" . esc_url(admin_url('admin-ajax.php')) . "', { action: 'tabaix_seo_itc_frontend_quota' }, function(r) {
+                    if (r.success && r.data) {
+                        var left = r.data.credits_remaining !== undefined ? r.data.credits_remaining : (r.data.remaining !== undefined ? r.data.remaining : '');
+                        if (left !== '') {
+                            $('.itc-live-quota').text(left);
+                        }
+                    }
+                });
+            }
+        });
+        ";
+        wp_add_inline_script('jquery', $script);
+    }
+
+    public function render_quota_shortcode($atts)
+    {
+        return '<span class="itc-live-quota-wrapper">📊 <strong class="itc-live-quota">...</strong> credits left</span>';
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -517,6 +551,21 @@ class TABAIX_SEO_ImageTight
     public function ajax_quota()
     {
         check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        $api_key = get_option(self::OPT_API_KEY, '');
+        if (empty($api_key)) wp_send_json_error('No API key');
+
+        $url      = add_query_arg('api_key', urlencode($api_key), self::QUOTA_URL);
+        $response = wp_remote_get($url, ['timeout' => 10]);
+        if (is_wp_error($response)) wp_send_json_error();
+
+        wp_send_json_success(json_decode(wp_remote_retrieve_body($response), true));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Check quota (Frontend)
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_frontend_quota()
+    {
         $api_key = get_option(self::OPT_API_KEY, '');
         if (empty($api_key)) wp_send_json_error('No API key');
 

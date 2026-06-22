@@ -118,7 +118,6 @@ function tabaix_seo_activate()
     TABAIX_SEO_Settings::set_defaults();
     $opts = get_option(TABAIX_SEO_Settings::OPTION_KEY, []);
     if (!isset($opts['autolink_enabled'])) TABAIX_SEO_Settings::update('autolink_enabled', 1);
-    if (!isset($opts['toc_enabled']))      TABAIX_SEO_Settings::update('toc_enabled', 1);
     flush_rewrite_rules();
 }
 
