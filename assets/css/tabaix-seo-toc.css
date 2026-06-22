@@ -63,9 +63,11 @@
 }
 .tabaix-seo-back-top,
 .tabai-toc-back-to-top {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    top: auto !important;
+    left: auto !important;
     background: #0F172A;
     color: white;
     border: none;
@@ -78,7 +80,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0,0,0,.3);
-    z-index: 999;
+    z-index: 999999;
     transition: opacity .2s;
 }
 .tabaix-seo-toc-mobile-trigger,

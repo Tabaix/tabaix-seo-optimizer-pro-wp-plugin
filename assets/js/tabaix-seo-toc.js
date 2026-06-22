@@ -79,6 +79,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('#tabaix-seo-back-top, .tabai-toc-back-to-top').forEach(function (btn) {
+        if (btn.parentNode !== document.body) {
+            document.body.appendChild(btn);
+        }
+        btn.style.position = 'fixed';
+        btn.style.bottom = '28px';
+        btn.style.right = '28px';
         btn.style.display = 'none';
         window.addEventListener('scroll', function () {
             btn.style.display = window.scrollY > 400 ? 'flex' : 'none';

@@ -79,7 +79,8 @@ class TABAIX_SEO_Ajax
             wp_send_json_error(['message' => 'Invalid security token (nonce).'], 403);
         }
 
-        if (!current_user_can('edit_posts')) {
+        $capability = $this->get_required_capability($action);
+        if (!current_user_can($capability)) {
             wp_send_json_error(['message' => 'Unauthorized: You do not have permission to perform this action.'], 403);
         }
 
@@ -89,6 +90,24 @@ class TABAIX_SEO_Ajax
         } else {
             wp_send_json_error(['message' => 'Unknown action: ' . $action]);
         }
+    }
+
+    private function get_required_capability($action)
+    {
+        $map = [
+            'tabaix_seo_quick_switch_provider'    => 'manage_options',
+            'tabaix_seo_test_connection'         => 'manage_options',
+            'tabaix_seo_save_manual_link'        => 'manage_options',
+            'tabaix_seo_delete_manual_link'      => 'manage_options',
+            'tabaix_seo_save_autolink_rules'     => 'manage_options',
+            'tabaix_seo_moderate_comment'        => 'moderate_comments',
+            'tabaix_seo_bulk_moderate'           => 'moderate_comments',
+            'tabaix_seo_generate_alt_text'       => 'upload_files',
+            'tabaix_seo_bulk_generate_alt_text'  => 'upload_files',
+            'tabaix_seo_save_seo_meta'           => 'edit_posts',
+        ];
+
+        return $map[$action] ?? 'edit_posts';
     }
 
     // ─── Content Generation ──────────────────────────────────────────────────

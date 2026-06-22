@@ -28,7 +28,9 @@ class TABAIX_SEO_TOC
     private function __construct()
     {
         // Auto-insert TOC into content
-        add_filter('the_content', [$this, 'auto_insert_toc'], 20);
+        // Disabled per user request: auto-insertion can make the TOC harder to customize.
+        // To re-enable automatic insertion, uncomment the line below.
+        // add_filter('the_content', [$this, 'auto_insert_toc'], 20);
 
         // Add anchor IDs to headings
         add_filter('the_content', [$this, 'inject_heading_ids'], 15);

@@ -472,7 +472,15 @@ class TABAIX_SEO_ImageTight
         }
 
         $file_path = get_attached_file($image_id);
-        copy($backup_path, $file_path);
+
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        WP_Filesystem();
+        global $wp_filesystem;
+
+        if (!$wp_filesystem->copy($backup_path, $file_path, true)) {
+            wp_send_json_error(['message' => 'Restore failed.']);
+        }
+
         wp_delete_file($backup_path);
 
         delete_post_meta($image_id, '_itc_is_optimized');
