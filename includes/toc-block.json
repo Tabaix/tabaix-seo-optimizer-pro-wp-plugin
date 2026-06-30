@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
-    "name": "tabai/advanced-toc",
+    "name": "tabaix/advanced-toc",
     "version": "1.0.0",
     "title": "Advanced Table of Contents",
     "category": "widgets",

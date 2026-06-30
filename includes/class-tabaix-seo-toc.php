@@ -43,7 +43,7 @@ class TABAIX_SEO_TOC
     public function register_block()
     {
         // Guard against duplicate registration (e.g. when the block is loaded more than once).
-        if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabai/advanced-toc' ) ) {
+        if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabaix/advanced-toc' ) ) {
             return;
         }
         register_block_type(__DIR__ . '/toc-block.json', [

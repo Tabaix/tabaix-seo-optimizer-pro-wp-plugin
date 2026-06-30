@@ -34,7 +34,7 @@ class TABAIX_SEO_Pros_Cons
     public function register_block()
     {
         // Guard against duplicate registration (e.g. when the block is loaded more than once).
-        if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabai/interactive-pros-cons' ) ) {
+        if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabaix/interactive-pros-cons' ) ) {
             return;
         }
         register_block_type(__DIR__ . '/pros-cons-block.json');
