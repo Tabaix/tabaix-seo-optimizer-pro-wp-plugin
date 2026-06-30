@@ -2,7 +2,7 @@
 Contributors: tabaix
 Tags: seo, image compression, internal linking, ai, content generation
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 2.0.0
 License: GPLv2 or later
