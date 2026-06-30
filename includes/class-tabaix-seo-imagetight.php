@@ -418,26 +418,35 @@ class TABAIX_SEO_ImageTight
             return new WP_Error('read_error', 'Could not read image file.');
         }
 
-        // Build multipart request body
+        // Build multipart request body with the same form fields the API expects.
         $boundary = wp_generate_password(20, false);
-        $body     = "--{$boundary}\r\n"
-            . 'Content-Disposition: form-data; name="image"; filename="' . basename($file_path) . "\"\r\n"
-            . 'Content-Type: ' . mime_content_type($file_path) . "\r\n\r\n"
-            . $file_data . "\r\n"
-            . "--{$boundary}--";
+        $body     = '';
 
-        $api_url = add_query_arg([
-            'api_key'  => $api_key,
-            'quality'  => $quality,
-            'format'   => $format,
-            'language' => $language,
-        ], self::API_ENDPOINT);
+        $form_fields = [
+            'api_key'       => $api_key,
+            'domain'        => site_url(),
+            'quality'       => (string) $quality,
+            'output_format' => $format,
+            'language'      => $language,
+        ];
 
         if (!empty($gemini_key)) {
-            $api_url = add_query_arg('gemini_key', $gemini_key, $api_url);
+            $form_fields['gemini_key'] = $gemini_key;
         }
 
-        $response = wp_remote_post($api_url, [
+        foreach ($form_fields as $name => $value) {
+            $body .= "--{$boundary}\r\n";
+            $body .= 'Content-Disposition: form-data; name="' . $name . "\"\r\n\r\n";
+            $body .= $value . "\r\n";
+        }
+
+        $body .= "--{$boundary}\r\n";
+        $body .= 'Content-Disposition: form-data; name="image"; filename="' . basename($file_path) . "\"\r\n";
+        $body .= 'Content-Type: ' . mime_content_type($file_path) . "\r\n\r\n";
+        $body .= $file_data . "\r\n";
+        $body .= "--{$boundary}--";
+
+        $response = wp_remote_post(self::API_ENDPOINT, [
             'timeout' => 60,
             'headers' => ['Content-Type' => "multipart/form-data; boundary={$boundary}"],
             'body'    => $body,
@@ -581,10 +590,25 @@ class TABAIX_SEO_ImageTight
     // ══════════════════════════════════════════════════════════════════
     public function auto_compress_on_upload($metadata, $attachment_id)
     {
-        if (!(int) get_option(self::OPT_AUTO, 0)) {
+        $api_key = get_option(self::OPT_API_KEY, '');
+        $auto_opt = get_option(self::OPT_AUTO, '');
+        $auto_enabled = $auto_opt === '' ? !empty($api_key) : (int) $auto_opt;
+
+        if (!$auto_enabled || empty($api_key)) {
             return $metadata;
         }
-        if (empty(get_option(self::OPT_API_KEY, ''))) {
+
+        if (get_post_meta((int) $attachment_id, '_itc_is_optimized', true)) {
+            return $metadata;
+        }
+
+        $file_path = get_attached_file((int) $attachment_id);
+        if (!$file_path || !file_exists($file_path)) {
+            return $metadata;
+        }
+
+        $mime_type = get_post_mime_type((int) $attachment_id);
+        if (!is_string($mime_type) || !preg_match('/^image\//i', $mime_type)) {
             return $metadata;
         }
 
