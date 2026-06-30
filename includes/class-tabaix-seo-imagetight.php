@@ -20,6 +20,7 @@ if (!defined('ABSPATH')) exit;
  *  - Quota checker
  *  - Settings (API key, quality, format, threshold, backup)
  */
+if (!class_exists('TABAIX_SEO_ImageTight')) {
 class TABAIX_SEO_ImageTight
 {
     private static $instance = null;
@@ -618,3 +619,4 @@ class TABAIX_SEO_ImageTight
         return $metadata;
     }
 }
+} // end class_exists check

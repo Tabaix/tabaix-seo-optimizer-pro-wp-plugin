@@ -51,7 +51,9 @@ $tabaix_seo_includes = [
 
 foreach ($tabaix_seo_includes as $tabaix_seo_file) {
     $tabaix_seo_path = TABAIX_SEO_PLUGIN_DIR . $tabaix_seo_file;
-    require_once $tabaix_seo_path;
+    if (file_exists($tabaix_seo_path)) {
+        require_once $tabaix_seo_path;
+    }
 }
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
@@ -77,17 +79,16 @@ function tabaix_seo_init()
         TABAIX_SEO_Editor_Links::get_instance();
         add_action('wp_ajax_tabaix_seo_analyze_draft', ['TABAIX_SEO_Editor_Links', 'handle_analyze_draft']);
 
-        // ImageTight module — admin AJAX + menu
-        TABAIX_SEO_ImageTight::get_instance();
-
         // Wire ImageTight page into the main admin menu
         add_action('admin_menu', 'tabaix_seo_register_imagetight_menu', 35);
     }
 
+    // ImageTight — init ONCE (handles both admin AJAX and frontend shortcodes)
+    TABAIX_SEO_ImageTight::get_instance();
+
     // Frontend features
     TABAIX_SEO_TOC::get_instance();
     TABAIX_SEO_Pros_Cons::get_instance();
-    TABAIX_SEO_ImageTight::get_instance();
     TABAIX_SEO_Head_Deduplicator::get_instance();
     TABAIX_SEO_Social_Share::get_instance();
     TABAIX_SEO_SEO_Translator::get_instance();
