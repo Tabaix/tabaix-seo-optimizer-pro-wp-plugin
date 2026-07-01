@@ -469,10 +469,41 @@ class TABAIX_SEO_ImageTight
         }
 
         // Write compressed file back
-        $compressed = wp_remote_retrieve_body($response);
-        $wp_filesystem->put_contents($file_path, $compressed, FS_CHMOD_FILE);
+        $compressed     = wp_remote_retrieve_body($response);
+        $server_format  = wp_remote_retrieve_header($response, 'x-output-format');
+        $server_format  = $server_format ? sanitize_key($server_format) : $format;
+        $original_ext   = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+        $target_ext     = $server_format === 'jpeg' ? 'jpg' : $server_format;
+        $target_path    = $file_path;
+        $original_path  = $file_path;
 
-        $new_size = strlen($compressed);
+        if ($target_ext !== $original_ext) {
+            $target_path = trailingslashit(dirname($file_path)) . pathinfo($file_path, PATHINFO_FILENAME) . '.' . $target_ext;
+        }
+
+        $wp_filesystem->put_contents($target_path, $compressed, FS_CHMOD_FILE);
+
+        if ($target_path !== $original_path && !$do_backup && file_exists($original_path)) {
+            @unlink($original_path);
+        }
+
+        if ($target_path !== $original_path) {
+            update_attached_file($image_id, $target_path);
+            $mime_type = $server_format === 'jpeg' ? 'image/jpeg' : 'image/' . $server_format;
+            wp_update_post(['ID' => $image_id, 'post_mime_type' => $mime_type]);
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        $metadata = wp_generate_attachment_metadata($image_id, $target_path);
+        if ($metadata && !is_wp_error($metadata)) {
+            wp_update_attachment_metadata($image_id, $metadata);
+        }
+
+        if ($target_path !== $original_path) {
+            $this->replace_attachment_urls($image_id, basename($target_path), $original_path);
+        }
+
+        $new_size = filesize($target_path);
         $saved    = max(0, $original_size - $new_size);
 
         // Save AI-generated alt text if returned in response header
@@ -498,6 +529,31 @@ class TABAIX_SEO_ImageTight
             'saved_fmt' => size_format($saved, 2),
             'new_size'  => size_format($new_size, 2),
         ];
+    }
+
+    private function replace_attachment_urls($attachment_id, $new_filename, $old_file)
+    {
+        global $wpdb;
+
+        $new_url = wp_get_attachment_url($attachment_id);
+        if (!$new_url) {
+            return;
+        }
+
+        $old_url_guess = str_replace(basename($new_url), basename($old_file), $new_url);
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)",
+            $old_url_guess,
+            $new_url
+        ));
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_value LIKE %s",
+            $old_url_guess,
+            $new_url,
+            '%' . $wpdb->esc_like($old_url_guess) . '%'
+        ));
     }
 
     // ══════════════════════════════════════════════════════════════════
