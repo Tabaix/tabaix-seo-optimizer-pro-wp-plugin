@@ -113,6 +113,7 @@
     // Save settings
     $('#tabaix-seo-itc-save-settings, #tabaix-seo-itc-test-key').on('click', function() {
         var $btn = $(this);
+        var buttonId = $btn.attr('id');
         $btn.text('⏳ Saving...').prop('disabled', true);
         $.post(ajaxurl, {
             action:    'tabaix_seo_itc_save_settings',
@@ -126,7 +127,7 @@
             gemini_key: $('#tabaix-seo-itc-gemini-key').val(),
             language:  $('#tabaix-seo-itc-language').val(),
         }, function(r) {
-            $btn.text($(this).attr('id') === 'tabaix-seo-itc-test-key' ? '🔑 Test & Save Key' : '💾 Save Settings').prop('disabled', false);
+            $btn.text(buttonId === 'tabaix-seo-itc-test-key' ? '🔑 Test & Save Key' : '💾 Save Settings').prop('disabled', false);
             if (r.success) {
                 $('#tabaix-seo-itc-save-status').text('✅ Saved!').css('color','#16A34A');
             } else {

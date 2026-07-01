@@ -490,7 +490,12 @@ class TABAIX_SEO_ImageTight
         if ($target_path !== $original_path) {
             update_attached_file($image_id, $target_path);
             $mime_type = $server_format === 'jpeg' ? 'image/jpeg' : 'image/' . $server_format;
-            wp_update_post(['ID' => $image_id, 'post_mime_type' => $mime_type]);
+            $attachment_url = str_replace(basename($original_path), basename($target_path), wp_get_attachment_url($image_id));
+            wp_update_post([
+                'ID'            => $image_id,
+                'post_mime_type' => $mime_type,
+                'guid'          => $attachment_url,
+            ]);
         }
 
         require_once ABSPATH . 'wp-admin/includes/image.php';
@@ -571,14 +576,38 @@ class TABAIX_SEO_ImageTight
             wp_send_json_error(['message' => 'Backup file not found.']);
         }
 
-        $file_path = get_attached_file($image_id);
+        $current_path      = get_attached_file($image_id);
+        $original_filename = basename($backup_path);
+        $original_filename = preg_replace('/\.itc_backup$/', '', $original_filename);
+        $restore_path      = trailingslashit(dirname($current_path)) . $original_filename;
 
         require_once ABSPATH . 'wp-admin/includes/file.php';
         WP_Filesystem();
         global $wp_filesystem;
 
-        if (!$wp_filesystem->copy($backup_path, $file_path, true)) {
+        if (!$wp_filesystem->copy($backup_path, $restore_path, true)) {
             wp_send_json_error(['message' => 'Restore failed.']);
+        }
+
+        if ($current_path && $current_path !== $restore_path && file_exists($current_path)) {
+            wp_delete_file($current_path);
+        }
+
+        update_attached_file($image_id, $restore_path);
+        $mime_type = wp_check_filetype($original_filename, null);
+        if (!empty($mime_type['type'])) {
+            $attachment_url = str_replace(basename($current_path), $original_filename, wp_get_attachment_url($image_id));
+            wp_update_post([
+                'ID'            => $image_id,
+                'post_mime_type' => $mime_type['type'],
+                'guid'          => $attachment_url,
+            ]);
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        $metadata = wp_generate_attachment_metadata($image_id, $restore_path);
+        if ($metadata && !is_wp_error($metadata)) {
+            wp_update_attachment_metadata($image_id, $metadata);
         }
 
         wp_delete_file($backup_path);
