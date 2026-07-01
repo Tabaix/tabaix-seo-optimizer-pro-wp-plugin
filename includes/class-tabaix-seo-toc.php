@@ -130,9 +130,7 @@ class TABAIX_SEO_TOC
         $has_shortcode = stripos($content, '[tabaix_seo_toc]') !== false;
         $has_block_in_content = false;
         if (is_a($post, 'WP_Post')) {
-            $has_block_in_content = has_block('tabai/advanced-toc', $post->post_content)
-                || has_block('tabai/advanced-toc', $content)
-                || has_block('tabaix/advanced-toc', $post->post_content)
+            $has_block_in_content = has_block('tabaix/advanced-toc', $post->post_content)
                 || has_block('tabaix/advanced-toc', $content);
         }
 
