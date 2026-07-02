@@ -47,11 +47,26 @@ class TABAIX_SEO_TOC
             return;
         }
 
-        if ( function_exists( 'register_block_type_from_metadata' ) ) {
-            register_block_type_from_metadata( __DIR__ . '/toc-block.json', [
+        $metadata_file = __DIR__ . '/toc-block.json';
+        if ( function_exists( 'register_block_type_from_metadata' ) && $this->is_valid_block_metadata( $metadata_file ) ) {
+            register_block_type_from_metadata( $metadata_file, [
                 'render_callback' => [$this, 'render_block']
             ] );
         }
+    }
+
+    private function is_valid_block_metadata( $metadata_file )
+    {
+        if ( ! file_exists( $metadata_file ) ) {
+            return false;
+        }
+
+        $data = json_decode( file_get_contents( $metadata_file ), true );
+        if ( ! is_array( $data ) || empty( $data['name'] ) ) {
+            return false;
+        }
+
+        return strpos( $data['name'], '/' ) !== false;
     }
 
     public function enqueue_assets()
