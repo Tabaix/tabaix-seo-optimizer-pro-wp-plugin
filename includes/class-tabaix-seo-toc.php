@@ -46,9 +46,12 @@ class TABAIX_SEO_TOC
         if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabaix/advanced-toc' ) ) {
             return;
         }
-        register_block_type(__DIR__ . '/toc-block.json', [
-            'render_callback' => [$this, 'render_block']
-        ]);
+
+        if ( function_exists( 'register_block_type_from_metadata' ) ) {
+            register_block_type_from_metadata( __DIR__ . '/toc-block.json', [
+                'render_callback' => [$this, 'render_block']
+            ] );
+        }
     }
 
     public function enqueue_assets()

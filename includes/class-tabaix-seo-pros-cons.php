@@ -37,7 +37,10 @@ class TABAIX_SEO_Pros_Cons
         if ( WP_Block_Type_Registry::get_instance()->is_registered( 'tabaix/interactive-pros-cons' ) ) {
             return;
         }
-        register_block_type(__DIR__ . '/pros-cons-block.json');
+
+        if ( function_exists( 'register_block_type_from_metadata' ) ) {
+            register_block_type_from_metadata( __DIR__ . '/pros-cons-block.json' );
+        }
     }
 
     public function enqueue_styles()
