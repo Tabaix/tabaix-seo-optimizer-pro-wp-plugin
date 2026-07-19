@@ -1,0 +1,54 @@
+.tabaix-seo-pc-wrap {
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 28px 0;
+    font-family: -apple-system, sans-serif;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.tabaix-seo-pc-header {
+    background: #0F172A;
+    color: white;
+    padding: 16px 22px;
+    font-size: 15px;
+    font-weight: 700;
+}
+.tabaix-seo-pc-header small { font-size: 12px; font-weight: 400; opacity: .6; margin-left: 8px; }
+.tabaix-seo-pc-body { display: grid; grid-template-columns: 1fr 1fr; }
+@media(max-width:600px){ .tabaix-seo-pc-body { grid-template-columns: 1fr; } }
+.tabaix-seo-pc-col { padding: 18px 22px; }
+.tabaix-seo-pc-col-heading {
+    font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin: 0 0 12px;
+}
+.tabaix-seo-pros { background: #F0FDF4; border-right: 1px solid #E2E8F0; }
+.tabaix-seo-cons { background: #FFF1F2; }
+.tabaix-seo-pros .tabaix-seo-pc-col-heading { color: #16A34A; }
+.tabaix-seo-cons .tabaix-seo-pc-col-heading { color: #DC2626; }
+.tabaix-seo-pc-list { margin: 0; padding: 0; list-style: none; }
+.tabaix-seo-pc-list li {
+    padding: 6px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    color: #1E293B;
+}
+.tabaix-seo-pc-list li:last-child { border-bottom: none; }
+.tabaix-seo-pros li::before { content: "✅"; flex-shrink: 0; }
+.tabaix-seo-cons li::before { content: "❌"; flex-shrink: 0; }
+.tabaix-seo-pc-rating {
+    background: #F8FAFC;
+    padding: 12px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid #E2E8F0;
+    font-size: 13px;
+    color: #64748B;
+}
+.tabaix-seo-pc-stars { color: #F59E0B; font-size: 18px; letter-spacing: 2px; }
+.tabaix-seo-pc-rating strong { color: #0F172A; font-size: 15px; }

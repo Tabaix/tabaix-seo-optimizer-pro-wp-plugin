@@ -1,0 +1,707 @@
+<?php
+if (!defined('ABSPATH')) exit;
+
+/**
+ * TABAIX_SEO_ImageTight — Image Compression Module for Tabaix All-in-One SEO & Optimizer
+ *
+ * Integrates the full ImageTight plugin functionality directly into the
+ * Tabaix All-in-One SEO & Optimizer admin interface as a dedicated module tab.
+ *
+ * The standalone imagetight-companion.php plugin still works independently.
+ * This module SHARES the same option keys (itc_api_key etc.) so settings
+ * are unified if both are installed — or fully independent if only suite is used.
+ *
+ * Features:
+ *  - Scan media library for heavy/unoptimized images
+ *  - 1-click compress via ImageTight Vercel Edge API
+ *  - Bulk optimize all heavy images
+ *  - Restore from backup
+ *  - Auto-compress on upload (optional)
+ *  - Quota checker
+ *  - Settings (API key, quality, format, threshold, backup)
+ */
+if (!class_exists('TABAIX_SEO_ImageTight')) {
+class TABAIX_SEO_ImageTight
+{
+    private static $instance = null;
+
+    // Shared option keys (same as standalone plugin for compatibility)
+    const OPT_API_KEY   = 'tabaix_seo_itc_api_key';
+    const OPT_QUALITY   = 'tabaix_seo_itc_compression_quality';
+    const OPT_FORMAT    = 'tabaix_seo_itc_output_format';
+    const OPT_THRESHOLD = 'tabaix_seo_itc_scan_threshold';
+    const OPT_AUTO      = 'tabaix_seo_itc_auto_compress';
+    const OPT_BACKUP    = 'tabaix_seo_itc_backup_originals';
+    const OPT_GEMINI_KEY= 'tabaix_seo_itc_gemini_api_key';
+    const OPT_LANGUAGE  = 'tabaix_seo_itc_language';
+
+    const API_ENDPOINT  = 'https://imagetight.com/api/compress';
+    const QUOTA_URL     = 'https://imagetight.com/api/quota';
+
+    public static function get_instance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private function __construct()
+    {
+        // Register AJAX handlers (prefixed tabaix_seo_ to avoid conflicts with standalone)
+        add_action('wp_ajax_tabaix_seo_itc_scan',         [$this, 'ajax_scan']);
+        add_action('wp_ajax_tabaix_seo_itc_compress',      [$this, 'ajax_compress']);
+        add_action('wp_ajax_tabaix_seo_itc_restore',       [$this, 'ajax_restore']);
+        add_action('wp_ajax_tabaix_seo_itc_save_settings', [$this, 'ajax_save_settings']);
+        add_action('wp_ajax_tabaix_seo_itc_quota',         [$this, 'ajax_quota']);
+
+        // Auto-compress on upload (if enabled)
+        add_filter('wp_generate_attachment_metadata', [$this, 'auto_compress_on_upload'], 10, 2);
+
+        // Enqueue scripts
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_scripts']);
+
+        // Frontend shortcode and AJAX
+        add_shortcode('imagetight_quota', [$this, 'render_quota_shortcode']);
+        add_action('wp_ajax_tabaix_seo_itc_frontend_quota', [$this, 'ajax_frontend_quota']);
+        add_action('wp_ajax_nopriv_tabaix_seo_itc_frontend_quota', [$this, 'ajax_frontend_quota']);
+    }
+
+    public function enqueue_scripts($hook)
+    {
+        // Only load on our ImageTight page or the media library
+        if (strpos($hook, 'tabaix-seo-') === false && $hook !== 'upload.php') return;
+
+        wp_enqueue_script('tabaix-seo-imagetight-script', TABAIX_SEO_PLUGIN_URL . 'assets/js/tabaix-seo-imagetight.js', ['jquery'], TABAIX_SEO_VERSION, true);
+
+        $api_key = get_option(self::OPT_API_KEY, '');
+        wp_localize_script('tabaix-seo-imagetight-script', 'tabaix_seo_itc_data', [
+            'nonce'   => wp_create_nonce('tabaix_seo_admin_nonce'),
+            'hasKey'  => !empty($api_key),
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+        ]);
+    }
+
+    public function enqueue_frontend_scripts()
+    {
+        $api_key = get_option(self::OPT_API_KEY, '');
+        if (empty($api_key)) return;
+
+        wp_enqueue_script('jquery');
+        $script = "
+        jQuery(document).ready(function($) {
+            if ($('.itc-live-quota').length > 0) {
+                $.get('" . esc_url(admin_url('admin-ajax.php')) . "', { action: 'tabaix_seo_itc_frontend_quota' }, function(r) {
+                    if (r.success && r.data) {
+                        var left = r.data.credits_remaining !== undefined ? r.data.credits_remaining : (r.data.remaining !== undefined ? r.data.remaining : '');
+                        if (left !== '') {
+                            $('.itc-live-quota').text(left);
+                        }
+                    }
+                });
+            }
+        });
+        ";
+        wp_add_inline_script('jquery', $script);
+    }
+
+    public function render_quota_shortcode($atts)
+    {
+        return '<span class="itc-live-quota-wrapper">📊 <strong class="itc-live-quota">...</strong> credits left</span>';
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // ADMIN PAGE HTML
+    // ══════════════════════════════════════════════════════════════════
+    public function render_page()
+    {
+        global $wpdb;
+        $api_key    = get_option(self::OPT_API_KEY, '');
+        $quality    = (int)get_option(self::OPT_QUALITY, 75);
+        $format     = get_option(self::OPT_FORMAT, 'webp');
+        $threshold  = (int)get_option(self::OPT_THRESHOLD, 150);
+        $auto       = (int)get_option(self::OPT_AUTO, 0);
+        $backup     = (int)get_option(self::OPT_BACKUP, 1);
+        $gemini_key = get_option(self::OPT_GEMINI_KEY, '');
+        $language   = get_option(self::OPT_LANGUAGE, 'English');
+        $has_key    = !empty($api_key);
+
+        $total_img  = wp_count_attachments('image');
+        $total      = isset($total_img->inherit) ? (int)$total_img->inherit : 0;
+        $optimized  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key='_itc_is_optimized' AND meta_value='1'");
+        $saved_raw  = (int)$wpdb->get_var("SELECT SUM(meta_value) FROM {$wpdb->postmeta} WHERE meta_key='_itc_bytes_saved'");
+        $saved_fmt  = $saved_raw ? size_format($saved_raw, 2) : '0 B';
+        $pending    = max(0, $total - $optimized);
+        $pct        = $total > 0 ? round(($optimized / $total) * 100) : 0;
+        ?>
+
+        <div class="tabaix-seo-wrap wrap">
+            <div class="tss-header">
+                <span class="dashicons dashicons-performance" style="font-size:28px;width:28px;height:28px;"></span>
+                <div>
+                    <h1>🗜️ ImageTight — Image Optimizer</h1>
+                    <small style="color:#94A3B8;">Compress & convert your WordPress media library via Vercel Edge API</small>
+                </div>
+                <span id="tabaix-seo-quota-badge" style="margin-left:auto;background:#1E293B;color:#22C55E;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13px;display:none;">
+                    📊 <span id="tabaix-seo-quota-val">—</span> credits left
+                </span>
+            </div>
+
+            <?php if (!$has_key): ?>
+            <div class="tss-notice tss-notice-warn">
+                ⚠️ <strong>No ImageTight API key set.</strong>
+                Get your free API key at <a href="https://imagetight.com/dashboard" target="_blank"><strong>imagetight.com</strong></a>
+                then enter it below in Settings.
+            </div>
+            <?php endif; ?>
+
+            <!-- Stats Row -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+                <?php
+                $stats = [
+                    ['label'=>'Total Images',   'value'=>$total,       'color'=>'#0F172A'],
+                    ['label'=>'Optimized',       'value'=>$optimized,   'color'=>'#16A34A'],
+                    ['label'=>'Pending',         'value'=>$pending,     'color'=>'#DC2626'],
+                    ['label'=>'Storage Saved',   'value'=>$saved_fmt,   'color'=>'#2563EB'],
+                ];
+                foreach ($stats as $s):
+                ?>
+                <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:20px;text-align:center;">
+                    <div style="font-size:30px;font-weight:900;color:<?php echo esc_attr($s['color']); ?>;"><?php echo esc_html($s['value']); ?></div>
+                    <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;"><?php echo esc_html($s['label']); ?></div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tss-tabs">
+                <a class="tss-tab active" href="#" data-tab="tabaix-seo-tab-scan">📂 Media Scanner</a>
+                <a class="tss-tab" href="#" data-tab="tabaix-seo-tab-optimized">✅ Optimized Images</a>
+                <a class="tss-tab" href="#" data-tab="tabaix-seo-tab-settings">⚙️ Settings</a>
+            </div>
+
+            <!-- Tab: Scanner -->
+            <div id="tabaix-seo-tab-scan" class="tabaix-seo-tab-pane tss-section" style="display:block;">
+                <h2>📂 Media Library Scanner</h2>
+                <p style="color:#64748B;font-size:13px;margin-bottom:16px;">
+                    Scan your media library for heavy images (over <?php echo intval($threshold); ?>KB) and compress them 1-click to WebP/AVIF via the ImageTight API.
+                </p>
+                <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+                    <button id="tabaix-seo-scan-btn" class="tss-btn" <?php echo !$has_key ? 'disabled' : ''; ?>>
+                        🔍 Scan for Heavy Images
+                    </button>
+                    <button id="tabaix-seo-bulk-btn" class="tss-btn" style="display:none;background:#6366F1;" <?php echo !$has_key ? 'disabled' : ''; ?>>
+                        🚀 Bulk Optimize All Pending
+                    </button>
+                    <span id="tabaix-seo-scan-status" style="font-size:13px;color:#64748B;"></span>
+                </div>
+                <div id="tabaix-seo-progress-wrap" style="display:none;background:#E2E8F0;border-radius:8px;overflow:hidden;height:10px;margin-bottom:16px;">
+                    <div id="tabaix-seo-progress-bar" style="height:100%;background:#22C55E;width:0%;transition:width .3s;"></div>
+                </div>
+                <div id="tabaix-seo-scan-results"></div>
+            </div>
+
+            <!-- Tab: Optimized -->
+            <div id="tabaix-seo-tab-optimized" class="tabaix-seo-tab-pane tss-section" style="display:none;">
+                <h2>✅ Optimized Images — Restore Backup</h2>
+                <div id="tabaix-seo-optimized-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+                <?php
+                $opt_query = new WP_Query([
+                    'post_type'       => 'attachment',
+                    'post_status'     => 'inherit',
+                    'posts_per_page'  => 60,
+                    'meta_key'        => '_itc_is_optimized',
+                    'meta_value'      => '1',
+                ]);
+                if ($opt_query->have_posts()):
+                    foreach ($opt_query->posts as $att):
+                        $thumb      = wp_get_attachment_image_url($att->ID, 'thumbnail');
+                        $saved_b    = (int)get_post_meta($att->ID, '_itc_bytes_saved', true);
+                        $has_backup = !empty(get_post_meta($att->ID, '_itc_backup_path', true));
+                ?>
+                    <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:12px;text-align:center;">
+                        <img src="<?php echo esc_url($thumb); ?>" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;">
+                        <div style="font-size:11px;color:#065F46;font-weight:700;">💾 <?php echo esc_html(size_format($saved_b)); ?> saved</div>
+                        <?php if ($has_backup): ?>
+                        <button class="tss-btn tss-btn-sm tabaix-seo-restore-btn" data-id="<?php echo esc_attr($att->ID); ?>"
+                            style="background:#EF4444;margin-top:8px;font-size:11px;padding:4px 10px;">
+                            ↩ Restore
+                        </button>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach;
+                else: ?>
+                    <p style="color:#94A3B8;font-style:italic;">No optimized images yet. Run the scanner first.</p>
+                <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Tab: Settings -->
+            <div id="tabaix-seo-tab-settings" class="tabaix-seo-tab-pane tss-section" style="display:none;">
+                <h2>⚙️ ImageTight Settings</h2>
+                <div class="tss-notice">
+                    💡 Get your free API key at
+                    <a href="https://imagetight.com/pricing" target="_blank"><strong>imagetight.com/pricing</strong></a>
+                    — free tier includes 100 compressions/month.
+                </div>
+                <div class="tss-row">
+                    <label class="tss-label">ImageTight API Key</label>
+                    <input type="password" id="tabaix-seo-itc-apikey" class="tss-input" style="max-width:500px;"
+                        value="<?php echo esc_attr($api_key); ?>" placeholder="it_live_..." />
+                    <button class="tss-btn tss-btn-sm" id="tabaix-seo-itc-test-key" style="margin-top:8px;">🔑 Test & Save Key</button>
+                    <span id="tabaix-seo-itc-key-status" style="font-size:12px;margin-left:10px;"></span>
+                </div>
+                <div class="tss-row" style="margin-top:20px;background:rgba(59,130,246,0.05);padding:16px;border-radius:12px;border:1px solid rgba(59,130,246,0.2);">
+                    <label class="tss-label" style="color:#2563EB;">✨ Google Gemini AI Key (Free AI Alt Text)</label>
+                    <p style="font-size:12px;color:#64748B;margin-bottom:10px;">Enter your free Gemini API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>. This will securely trigger our Vercel Edge API to generate high-quality SEO Alt Text for your images during compression!</p>
+                    <input type="password" id="tabaix-seo-itc-gemini-key" class="tss-input" style="max-width:500px;"
+                        value="<?php echo esc_attr($gemini_key); ?>" placeholder="AIzaSy..." />
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;">
+                    <div class="tss-row">
+                        <label class="tss-label">Output Format</label>
+                        <select id="tabaix-seo-itc-format" class="tss-input">
+                            <option value="webp" <?php selected($format,'webp'); ?>>WebP (Recommended)</option>
+                            <option value="avif" <?php selected($format,'avif'); ?>>AVIF (Smallest)</option>
+                            <option value="jpeg" <?php selected($format,'jpeg'); ?>>JPEG (Compatible)</option>
+                        </select>
+                    </div>
+                    <div class="tss-row">
+                        <label class="tss-label">AI Alt Text Language</label>
+                        <select id="tabaix-seo-itc-language" class="tss-input">
+                            <?php
+                            $languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese', 'Korean', 'Arabic', 'Urdu', 'Hindi', 'Bengali'];
+                            foreach ($languages as $lang) {
+                                echo '<option value="' . esc_attr($lang) . '" ' . selected($language, $lang, false) . '>' . esc_html($lang) . '</option>';
+                            }
+                            ?>
+                        </select>
+                        <small style="color:#94A3B8;">Select the language for your AI-generated alt text.</small>
+                    </div>
+                    <div class="tss-row">
+                        <label class="tss-label">Quality (1–100)</label>
+                        <input type="number" id="tabaix-seo-itc-quality" class="tss-input" value="<?php echo esc_attr($quality); ?>" min="1" max="100" />
+                    </div>
+                    <div class="tss-row">
+                        <label class="tss-label">Heavy Image Threshold (KB)</label>
+                        <input type="number" id="tabaix-seo-itc-threshold" class="tss-input" value="<?php echo esc_attr($threshold); ?>" min="50" />
+                        <small style="color:#94A3B8;">Images larger than this will be flagged for compression.</small>
+                    </div>
+                    <div class="tss-row">
+                        <label class="tss-label">Options</label>
+                        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                            <input type="checkbox" id="tabaix-seo-itc-auto" <?php checked($auto,1); ?>> Auto-compress new uploads
+                        </label>
+                        <label style="display:flex;gap:8px;align-items:center;">
+                            <input type="checkbox" id="tabaix-seo-itc-backup" <?php checked($backup,1); ?>> Keep backup of originals
+                        </label>
+                    </div>
+                </div>
+                <button class="tss-btn" id="tabaix-seo-itc-save-settings" style="margin-top:20px;">💾 Save Settings</button>
+                <span id="tabaix-seo-itc-save-status" style="font-size:12px;margin-left:12px;color:#065F46;"></span>
+            </div>
+        </div>
+        <?php
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Scan for heavy images
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_scan()
+    {
+        check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        if (!current_user_can('upload_files')) wp_send_json_error();
+
+        $threshold_kb = (int)get_option(self::OPT_THRESHOLD, 150) * 1024;
+
+        $attachments = get_posts([
+            'post_type'      => 'attachment',
+            'post_mime_type' => 'image',
+            'post_status'    => 'inherit',
+            'posts_per_page' => 200,
+            'meta_query'     => [['key' => '_itc_is_optimized', 'compare' => 'NOT EXISTS']],
+        ]);
+
+        $results = [];
+        foreach ($attachments as $att) {
+            $path = get_attached_file($att->ID);
+            if (!$path || !file_exists($path)) continue;
+            $size = filesize($path);
+            if ($size < $threshold_kb) continue;
+
+            $results[] = [
+                'id'       => $att->ID,
+                'filename' => basename($path),
+                'path'     => $path,
+                'size'     => $size,
+                'size_fmt' => size_format($size, 2),
+                'thumb'    => wp_get_attachment_image_url($att->ID, 'thumbnail'),
+            ];
+        }
+
+        wp_send_json_success(['images' => $results, 'count' => count($results)]);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Compress single image
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_compress()
+    {
+        check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        if (!current_user_can('upload_files')) wp_send_json_error();
+
+        $image_id = isset($_POST['image_id']) ? (int) wp_unslash($_POST['image_id']) : 0;
+        $api_key  = get_option(self::OPT_API_KEY, '');
+
+        if (!$image_id || empty($api_key)) {
+            wp_send_json_error(['message' => 'Missing image ID or API key.']);
+        }
+
+        $result = $this->compress_image($image_id);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+        }
+
+        wp_send_json_success($result);
+    }
+
+    /**
+     * Core image compression logic — used by both AJAX handler and auto-compress on upload.
+     *
+     * @param int $image_id Attachment post ID.
+     * @return array|WP_Error Compression result data on success, WP_Error on failure.
+     */
+    private function compress_image($image_id)
+    {
+        $api_key    = get_option(self::OPT_API_KEY, '');
+        $quality    = (int) get_option(self::OPT_QUALITY, 75);
+        $format     = sanitize_key(get_option(self::OPT_FORMAT, 'webp'));
+        $do_backup  = (int) get_option(self::OPT_BACKUP, 1);
+        $gemini_key = get_option(self::OPT_GEMINI_KEY, '');
+        $language   = sanitize_text_field(get_option(self::OPT_LANGUAGE, 'English'));
+
+        if (empty($api_key)) {
+            return new WP_Error('no_api_key', 'ImageTight API key is not configured.');
+        }
+
+        $file_path = get_attached_file($image_id);
+        if (!$file_path || !file_exists($file_path)) {
+            return new WP_Error('file_not_found', 'Attachment file not found.');
+        }
+
+        $original_size = filesize($file_path);
+
+        // Backup original before overwriting
+        $backup_path = '';
+        if ($do_backup) {
+            $upload_dir  = wp_upload_dir();
+            $backup_dir  = trailingslashit($upload_dir['basedir']) . 'imagetight-backups/';
+            wp_mkdir_p($backup_dir);
+            $backup_path = $backup_dir . basename($file_path) . '.itc_backup';
+            // Use WP_Filesystem to copy (already initialized above)
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+            global $wp_filesystem;
+            $wp_filesystem->copy($file_path, $backup_path, true);
+        }
+
+        // Read file via WP_Filesystem (not file_get_contents)
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        WP_Filesystem();
+        global $wp_filesystem;
+        $file_data = $wp_filesystem->get_contents($file_path);
+        if (false === $file_data) {
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return new WP_Error('read_error', 'Could not read image file.');
+        }
+
+        // Build multipart request body with the same form fields the API expects.
+        $boundary = wp_generate_password(20, false);
+        $body     = '';
+
+        $form_fields = [
+            'api_key'       => $api_key,
+            'domain'        => site_url(),
+            'quality'       => (string) $quality,
+            'output_format' => $format,
+            'language'      => $language,
+        ];
+
+        if (!empty($gemini_key)) {
+            $form_fields['gemini_key'] = $gemini_key;
+        }
+
+        foreach ($form_fields as $name => $value) {
+            $body .= "--{$boundary}\r\n";
+            $body .= 'Content-Disposition: form-data; name="' . $name . "\"\r\n\r\n";
+            $body .= $value . "\r\n";
+        }
+
+        $body .= "--{$boundary}\r\n";
+        $body .= 'Content-Disposition: form-data; name="image"; filename="' . basename($file_path) . "\"\r\n";
+        $body .= 'Content-Type: ' . mime_content_type($file_path) . "\r\n\r\n";
+        $body .= $file_data . "\r\n";
+        $body .= "--{$boundary}--";
+
+        $response = wp_remote_post(self::API_ENDPOINT, [
+            'timeout' => 60,
+            'headers' => ['Content-Type' => "multipart/form-data; boundary={$boundary}"],
+            'body'    => $body,
+        ]);
+
+        if (is_wp_error($response)) {
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return $response;
+        }
+
+        $code = wp_remote_retrieve_response_code($response);
+        if ($code !== 200) {
+            if ($backup_path && file_exists($backup_path)) {
+                wp_delete_file($backup_path);
+            }
+            return new WP_Error('api_error', "ImageTight API error (HTTP {$code})");
+        }
+
+        // Write compressed file back
+        $compressed     = wp_remote_retrieve_body($response);
+        $server_format  = wp_remote_retrieve_header($response, 'x-output-format');
+        $server_format  = $server_format ? sanitize_key($server_format) : $format;
+        $original_ext   = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+        $target_ext     = $server_format === 'jpeg' ? 'jpg' : $server_format;
+        $target_path    = $file_path;
+        $original_path  = $file_path;
+
+        if ($target_ext !== $original_ext) {
+            $target_path = trailingslashit(dirname($file_path)) . pathinfo($file_path, PATHINFO_FILENAME) . '.' . $target_ext;
+        }
+
+        $wp_filesystem->put_contents($target_path, $compressed, FS_CHMOD_FILE);
+
+        if ($target_path !== $original_path && !$do_backup && file_exists($original_path)) {
+            @unlink($original_path);
+        }
+
+        if ($target_path !== $original_path) {
+            update_attached_file($image_id, $target_path);
+            $mime_type = $server_format === 'jpeg' ? 'image/jpeg' : 'image/' . $server_format;
+            $attachment_url = str_replace(basename($original_path), basename($target_path), wp_get_attachment_url($image_id));
+            wp_update_post([
+                'ID'            => $image_id,
+                'post_mime_type' => $mime_type,
+                'guid'          => $attachment_url,
+            ]);
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        $metadata = wp_generate_attachment_metadata($image_id, $target_path);
+        if ($metadata && !is_wp_error($metadata)) {
+            wp_update_attachment_metadata($image_id, $metadata);
+        }
+
+        if ($target_path !== $original_path) {
+            $this->replace_attachment_urls($image_id, basename($target_path), $original_path);
+        }
+
+        $new_size = filesize($target_path);
+        $saved    = max(0, $original_size - $new_size);
+
+        // Save AI-generated alt text if returned in response header
+        $alt_text_b64 = wp_remote_retrieve_header($response, 'x-generated-alt');
+        if (!empty($alt_text_b64)) {
+            // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+            $alt_text = base64_decode($alt_text_b64, true);
+            if ($alt_text) {
+                update_post_meta($image_id, '_wp_attachment_image_alt', sanitize_text_field($alt_text));
+            }
+        }
+
+        // Persist compression metadata
+        update_post_meta($image_id, '_itc_is_optimized',  '1');
+        update_post_meta($image_id, '_itc_bytes_saved',   $saved);
+        update_post_meta($image_id, '_itc_original_size', $original_size);
+        if ($backup_path) {
+            update_post_meta($image_id, '_itc_backup_path', $backup_path);
+        }
+
+        return [
+            'saved'     => $saved,
+            'saved_fmt' => size_format($saved, 2),
+            'new_size'  => size_format($new_size, 2),
+        ];
+    }
+
+    private function replace_attachment_urls($attachment_id, $new_filename, $old_file)
+    {
+        global $wpdb;
+
+        $new_url = wp_get_attachment_url($attachment_id);
+        if (!$new_url) {
+            return;
+        }
+
+        $old_url_guess = str_replace(basename($new_url), basename($old_file), $new_url);
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)",
+            $old_url_guess,
+            $new_url
+        ));
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_value LIKE %s",
+            $old_url_guess,
+            $new_url,
+            '%' . $wpdb->esc_like($old_url_guess) . '%'
+        ));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Restore original
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_restore()
+    {
+        check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        if (!current_user_can('upload_files')) wp_send_json_error();
+
+        $image_id    = (int)($_POST['image_id'] ?? 0);
+        $backup_path = get_post_meta($image_id, '_itc_backup_path', true);
+
+        if (empty($backup_path) || !file_exists($backup_path)) {
+            wp_send_json_error(['message' => 'Backup file not found.']);
+        }
+
+        $current_path      = get_attached_file($image_id);
+        $original_filename = basename($backup_path);
+        $original_filename = preg_replace('/\.itc_backup$/', '', $original_filename);
+        $restore_path      = trailingslashit(dirname($current_path)) . $original_filename;
+
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        WP_Filesystem();
+        global $wp_filesystem;
+
+        if (!$wp_filesystem->copy($backup_path, $restore_path, true)) {
+            wp_send_json_error(['message' => 'Restore failed.']);
+        }
+
+        if ($current_path && $current_path !== $restore_path && file_exists($current_path)) {
+            wp_delete_file($current_path);
+        }
+
+        update_attached_file($image_id, $restore_path);
+        $mime_type = wp_check_filetype($original_filename, null);
+        if (!empty($mime_type['type'])) {
+            $attachment_url = str_replace(basename($current_path), $original_filename, wp_get_attachment_url($image_id));
+            wp_update_post([
+                'ID'            => $image_id,
+                'post_mime_type' => $mime_type['type'],
+                'guid'          => $attachment_url,
+            ]);
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        $metadata = wp_generate_attachment_metadata($image_id, $restore_path);
+        if ($metadata && !is_wp_error($metadata)) {
+            wp_update_attachment_metadata($image_id, $metadata);
+        }
+
+        wp_delete_file($backup_path);
+
+        delete_post_meta($image_id, '_itc_is_optimized');
+        delete_post_meta($image_id, '_itc_bytes_saved');
+        delete_post_meta($image_id, '_itc_backup_path');
+        delete_post_meta($image_id, '_itc_original_size');
+
+        wp_send_json_success(['message' => 'Image restored.']);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Save settings
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_save_settings()
+    {
+        check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_send_json_error();
+
+        update_option(self::OPT_API_KEY,   sanitize_text_field(wp_unslash($_POST['api_key']   ?? '')));
+        update_option(self::OPT_QUALITY,   min(100, max(1, (int) wp_unslash($_POST['quality']   ?? 75))));
+        update_option(self::OPT_FORMAT,    sanitize_key(wp_unslash($_POST['format']    ?? 'webp')));
+        update_option(self::OPT_THRESHOLD, max(50, (int) wp_unslash($_POST['threshold'] ?? 150)));
+        update_option(self::OPT_AUTO,      (int) wp_unslash($_POST['auto']      ?? 0));
+        update_option(self::OPT_BACKUP,    (int) wp_unslash($_POST['backup']    ?? 1));
+        update_option(self::OPT_GEMINI_KEY, sanitize_text_field(wp_unslash($_POST['gemini_key'] ?? '')));
+        update_option(self::OPT_LANGUAGE,  sanitize_text_field(wp_unslash($_POST['language']   ?? 'English')));
+
+        wp_send_json_success('Settings saved.');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Check quota
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_quota()
+    {
+        check_ajax_referer('tabaix_seo_admin_nonce', 'nonce');
+        $api_key = get_option(self::OPT_API_KEY, '');
+        if (empty($api_key)) wp_send_json_error('No API key');
+
+        $url      = add_query_arg('api_key', urlencode($api_key), self::QUOTA_URL);
+        $response = wp_remote_get($url, ['timeout' => 10]);
+        if (is_wp_error($response)) wp_send_json_error();
+
+        wp_send_json_success(json_decode(wp_remote_retrieve_body($response), true));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX: Check quota (Frontend)
+    // ══════════════════════════════════════════════════════════════════
+    public function ajax_frontend_quota()
+    {
+        $api_key = get_option(self::OPT_API_KEY, '');
+        if (empty($api_key)) wp_send_json_error('No API key');
+
+        $url      = add_query_arg('api_key', urlencode($api_key), self::QUOTA_URL);
+        $response = wp_remote_get($url, ['timeout' => 10]);
+        if (is_wp_error($response)) wp_send_json_error();
+
+        wp_send_json_success(json_decode(wp_remote_retrieve_body($response), true));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Auto-compress on upload
+    // ══════════════════════════════════════════════════════════════════
+    public function auto_compress_on_upload($metadata, $attachment_id)
+    {
+        $api_key = get_option(self::OPT_API_KEY, '');
+        $auto_opt = get_option(self::OPT_AUTO, '');
+        $auto_enabled = $auto_opt === '' ? !empty($api_key) : (int) $auto_opt;
+
+        if (!$auto_enabled || empty($api_key)) {
+            return $metadata;
+        }
+
+        if (get_post_meta((int) $attachment_id, '_itc_is_optimized', true)) {
+            return $metadata;
+        }
+
+        $file_path = get_attached_file((int) $attachment_id);
+        if (!$file_path || !file_exists($file_path)) {
+            return $metadata;
+        }
+
+        $mime_type = get_post_mime_type((int) $attachment_id);
+        if (!is_string($mime_type) || !preg_match('/^image\//i', $mime_type)) {
+            return $metadata;
+        }
+
+        // Call the core compression logic directly — never manipulate superglobals.
+        $this->compress_image((int) $attachment_id);
+
+        return $metadata;
+    }
+}
+} // end class_exists check
